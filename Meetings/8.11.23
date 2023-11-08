@@ -1,0 +1,42 @@
+- GitHub repository setup
+- Competence
+
+	Omar: Python, ML
+	Andrea: Java, (React)
+	Stefano: Python, C/C++, ML, Data analisys
+	Alessandro: C++, UML, OOP
+	
+
+- Project
+
+	Racomandation system for Wikipedia pages
+	
+	- ML Pipline - (Server - Python)
+		-Database ( Table1(PageID, URL, BoW), Table2(User, PageID, [0,1]))
+
+	- Frontend - (Web, Mobile) -> Linguaggio multiplatform
+	
+	
+	
+	Pipeline (X,Y) Y = BoW, X=Preference
+	
+	
+	
+	Sistema di integrazione di nuove pagine -> continuous training
+	
+	- Get data from wikipedia
+	- Preprocessing -> bag of words
+		
+	// Fase 1
+		- each person one SVM ((page, person)-> [0,1])
+		- after seen page remove from list
+		
+		-? Dove sono i dati? Server, Cookie, App filesystem
+		-? Dove avviene l'elaborazione della raccomandazione? Locale, Server
+		 
+		 
+		 ----------> Omar prototype
+		
+	// Fase 2
+		- clustering pages and raccomandation
+		
