@@ -3,7 +3,7 @@
 
 ## Workload
 
-### system definition and design
+### System definition and design
 - defining simplest working system
 - defining complete system
 - target audience
@@ -27,7 +27,7 @@
 
 ### User Interface (Andrea, Alessio)
 - basic browser UI
-- app?
+- Streamlit
 - ...
 
 ### Maintainance 
