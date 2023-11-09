@@ -1,32 +1,45 @@
 # Exam readme
 
+
 ## Workload
 
-Data-scraping pipeline
-- download list of interesting Wikipedia pages
-- method to download wikipedia page
-- method to convert page to BoW
-- create wiki BoW dataset
+### system definition and design
+- defining simplest working system
+- defining complete system
+- target audience
+
+### Data-scraping pipeline (Omar)
+- download list of interesting Wikipedia pages 
+- method to download wikipedia page 
+- method to convert page to BoW 
+- create wiki BoW dataset 
 - method to update BoW
 
-User data
+### User data (Omar, Stefano)
 - method to create new user
 - method to add user preferences and create sample user dataset
 - method to make recommendation 
 
-Model 
-- create a SVM on sample user data
-- make recommendation system
+### Model (Stefano, Omar)
+- create a SVM on sample user data (Omar, Stefano)
+- make recommendation system 
+- try with other architectures
 
-User Interface
-- basic page
+### User Interface (Andrea, Alessio)
+- basic browser UI
+- app?
 - ...
+
+### Maintainance 
+- updating models
+- updating keywords, wiki database and user databases
+- updating recommendation algorithm
 
 
 ## Milestones
 
-- Minimal working product(single user, few pages, few keywords)
-- Many keywords, many pages
+- Minimal working product (single user, few pages, few keywords)
+- Additions: many keywords, many pages
 - Multiple users
 - Final product testing
 
