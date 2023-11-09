@@ -7,6 +7,7 @@ Data-scraping pipeline
 - method to download wikipedia page
 - method to convert page to BoW
 - create wiki BoW dataset
+- method to update BoW
 
 User data
 - method to create new user
@@ -24,7 +25,15 @@ User Interface
 
 ## Milestones
 
-Minimal working product(single user, few pages, few keywords)
-Many keywords, many pages
-Multiple users
-Final product testing
+- Minimal working product(single user, few pages, few keywords)
+- Many keywords, many pages
+- Multiple users
+- Final product testing
+
+
+## Notes
+
+- BoW keywords are the same for all user, they only change during an update
+- one model for each user
+- the models are trained (mostly) on the user's dataset
+- during recommendation, the model is called on a subset of the Wiki dataset, and the highest scoring page gets recommended
