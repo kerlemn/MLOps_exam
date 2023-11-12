@@ -1,7 +1,20 @@
+"""
+Web scraping pipeline for building a dataset of bags of words from wikipedia pages
+- download wikipedia pages
+- extract text
+- clean text
+- build bag of words
+- save bag of words
+
+The pipeline is used in model_training.py to build the dataset
+
+The wiki_bags.pkl file contains a dictionary:
+{'bags': dict(...), 'keywords': [...]}
+
+"""
 import requests
 import pickle
 import os
-import random
 
 
 WIKI_URL = 'https://en.wikipedia.org/w/api.php'
@@ -20,11 +33,6 @@ def clean_text(text: str):
     # split
     v = [x for x in text.split(' ') if x != '']
     return v
-
-
-def get_random_id(max_ids=10**15):
-    """ return a random id """
-    return random.randint(0, max_ids)
 
 
 def request_to_wiki(title):
@@ -52,10 +60,11 @@ class WebScrapingPipeline:
     """
     pipeline for building a dataset of bags of words from wikipedia pages
     """
-    def __init__(self, bag_creator):
-        self.bag_creator = bag_creator
+    def __init__(self):
         self.data_dir_path = 'data'
+        self.keywords = None
         self._build_env()
+        self.get_bags()  # sets keywords
 
     def _build_env(self):
         # build environment
@@ -70,7 +79,11 @@ class WebScrapingPipeline:
         # create wiki_bags.pkl if it doesn't exist
         if not os.path.exists(self.get_wiki_bags_path()):
             with open(self.get_wiki_bags_path(), 'wb') as f:
-                pickle.dump(dict(), f)
+                pickle.dump({'bags': dict(), 'keywords': []}, f)  # initial empty dictionary
+
+    def text_to_bag(self, text):
+        assert self.keywords is not None, 'keywords not set'
+        return [word in text for word in self.keywords]
 
     def get_wiki_bags_path(self):
         """return the path where the wiki bag of words are saved"""
@@ -80,73 +93,73 @@ class WebScrapingPipeline:
         """return the path where the user data is saved"""
         return self.data_dir_path + f'/user_data/user_{user_id}.pkl'
 
-    def convert_text_to_bag(self, text: str):
-        """return bag of words given some text"""
-        text = clean_text(text)
-        return self.bag_creator(text)
-
-    def save_bag(self, title, bag: list):
-        """append bag to the dictionary saved in the file"""
-        with open(self.get_wiki_bags_path(), 'rb') as f:
-            wiki_bags = pickle.load(f)
-        wiki_bags[title] = bag
-        with open(self.get_wiki_bags_path(), 'wb') as f:
-            pickle.dump(wiki_bags, f)
-
-    def add_bag(self, title):
-        """add bag to the dictionary saved in the file"""
-        text = request_text_from_wiki(title)
-        bag = self.convert_text_to_bag(text)
-        self.save_bag(title, bag)
-
-    def add_user(self):
-        """add user to the database and return his id"""
-        user_id = get_random_id()
-        path = self.get_user_data_path(user_id)
-        if not os.path.exists(path):
-            with open(path, 'wb') as f:
-                pickle.dump({}, f)
-        return user_id
-
     def get_bags(self) -> dict:
         """return dictionary of all the bags in the database"""
         with open(self.get_wiki_bags_path(), 'rb') as f:
-            return pickle.load(f)
+            dct = pickle.load(f)
+            new_keywords = dct['keywords']
+            if new_keywords:
+                self.keywords = dct['keywords']
+            return dct['bags']
+
+    def _save_bag(self, title, bag):
+        """append bag to the dictionary saved in the file"""
+        wiki_bags = self.get_bags()
+        wiki_bags[title] = tuple(bag)
+        with open(self.get_wiki_bags_path(), 'wb') as f:
+            pickle.dump({'keywords': self.keywords, 'bags': wiki_bags}, f)
+
+    def set_keywords(self, keywords: list):
+        """set the keywords for the pipeline"""
+        if not self.keywords:
+            self.keywords = keywords
+        elif self.keywords != keywords:
+            raise ValueError('Keywords already set! Use: get_bags()')
+
+    def add_bags(self, titles: list):
+        """add bag to the dictionary saved in the file"""
+        if not self.keywords:
+            raise ValueError('Keywords not set! Use: set_keywords(keywords)')
+        for title in titles:
+            text = request_text_from_wiki(title)
+            text = clean_text(text)
+            bag = self.text_to_bag(text)
+            self._save_bag(title, bag)
 
 
-def test_1():
-    """
-    test use of pipeline:
-    - create new user
-    - download some bags
-    - show results
-    """
+def test_make_dataset():
+    """download data and convert to BoW"""
 
-    # chose bag of wards
-    words = ['python', 'programming', 'matrix', 'batteries', 'budget', 'engineering', 'science']
-
-    def bag_creator(text):
-        return [word in text for word in words]
+    # choose keywords
+    keywords = ['python', 'programming', 'matrix', 'batteries', 'budget', 'engineering', 'science']
 
     # initialize pipeline
-    pipeline = WebScrapingPipeline(bag_creator)
+    pipeline = WebScrapingPipeline()
 
-    # dd user (just for testing)
-    new_user_id = pipeline.add_user()
-    print('\nOwO! Welcome to the party, user', new_user_id)
-
-    # download this titles
+    # download Wiki pages
     titles = ['Python (programming language)', 'The Matrix', 'Linear algebra']
-    for title in titles:
-        pipeline.add_bag(title)
+    pipeline.set_keywords(keywords)
+    pipeline.add_bags(titles)
 
-    # show the results
-    print(f'\nwords = {words}')
+    print('done')
+
+
+def test_read_dataset():
+    """show the dataset"""
+
+    # initialize pipeline
+    pipeline = WebScrapingPipeline()
+
+    # show the BoWs
     print('\nall bags:')
     bags = pipeline.get_bags()
     for title in bags:
         print(f'{bags[title]} {title}')
 
+    # show keywords
+    print(f'\nwords = {pipeline.keywords}')
+
 
 if __name__ == '__main__':
-    test_1()
+    # test_make_dataset()
+    test_read_dataset()
