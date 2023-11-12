@@ -18,21 +18,21 @@ import os
 
 
 WIKI_URL = 'https://en.wikipedia.org/w/api.php'
-REMOVE_CHARS = '[]{}()<>|\\^~`@#$%&*_-+=;:\'",.?/!\t\n'
+KEEP_CHARS = 'abcdefghijklmnopqrstuvwxyz '
 
 
 def clean_text(text: str):
     """ clean text from html tags and other stuff """
     # remove special chars
-    for c in REMOVE_CHARS:
-        text = text.replace(c, ' ')
 
     # lower case
     text = text.lower()
 
+    # keep only some chars
+    text = ''.join([x for x in text if x in KEEP_CHARS])
+
     # split
-    v = [x for x in text.split(' ') if x != '']
-    return v
+    return [x for x in text.split(' ') if x != '']
 
 
 def request_to_wiki(title):
@@ -141,7 +141,7 @@ def test_make_dataset():
     pipeline.set_keywords(keywords)
     pipeline.add_bags(titles)
 
-    print('done')
+    print('Done!\n')
 
 
 def test_read_dataset():
@@ -158,8 +158,9 @@ def test_read_dataset():
 
     # show keywords
     print(f'\nwords = {pipeline.keywords}')
+    print('Done!\n')
 
 
 if __name__ == '__main__':
-    # test_make_dataset()
+    test_make_dataset()
     test_read_dataset()
