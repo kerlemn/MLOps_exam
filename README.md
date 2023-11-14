@@ -58,7 +58,7 @@ The UI provides the user with an experiance of endless article-form content, fin
 - method to make recommendation 
 
 ### Model (Stefano, Omar)
-- create a SVM on sample user data (Omar, Stefano)
+- create a SVM on sample user data
 - make recommendation system 
 - try with other architectures
 
