@@ -1,0 +1,24 @@
+User requirement
+    Functional requirements
+        - The user uses the service from a web page
+        - The service has an authentication system (Registration - Login)
+            (?) During the registration the service asks about raccomandation information
+            (?) Login/registration system facilitated with Google acccount
+            (?) Login data saved with cookies
+        - The service offers a wikipedia (iFrame) article and scrolls to other pages
+        - The service gives the opportunity to leave a feedback (binary)
+        - The service gives the opportunity to save a page for later
+        - (?) The service gives the opportunuty to choose the similarity of the 
+
+    Non-functional requirements
+        - The page selection is based on a raccomandation system *
+        - The data managment will be hosted on a relational database
+
+
+
+* raccomandation system
+    - Based on ratings
+    - Based on preference
+    - misto
+
+
