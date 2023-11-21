@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>WikiTok</title>
+  </head>
+  <body>
+    <script>
+        var actual = 0;
+        var pages = ["https://en.wikipedia.org/wiki/Galaxy", "https://en.wikipedia.org/wiki/Modbus"];
+        document.addEventListener('DOMContentLoaded', function() {
+            // getMore();
+            document.getElementById("subpage").setAttribute("src", pages[actual]);
+        }, false);
+        function getMore(){
+            fetch("https://wikitok.onrender.com/predict")
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+            })
+            .then(data => {
+                const obj = JSON.parse(data);
+                pages.concat(data.Pages);
+            });
+        }
+        function next(){
+            // getMore();
+            if(actual<pages.length-1)
+                document.getElementById("subpage").setAttribute("src", pages[++actual]);
+        }
+        function previous(){
+            if(actual!=0)
+                document.getElementById("subpage").setAttribute("src", pages[--actual]);
+        }
+    </script>
+    <iframe id="subpage" width=100% style="height: 80vh;"></iframe>
+    <div width=30% style="margin: auto; text-align: center;">
+        <button style="font-size: 80px;" onclick={previous()}> &lt
+        </button>
+        <button style="font-size: 80px;" onclick={next()}> &gt
+        </button>
+    </div>
+</body>
+</html>
