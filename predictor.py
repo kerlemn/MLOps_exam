@@ -98,6 +98,15 @@ def train(user=""):
     # Save the model
     save_model(user, LR)
 
+def getPage():
+    """
+    Test shortcut
+    """
+    page_info = predict()
+    page      = page_info[0].replace(' ', '_')
+    return "https://en.wikipedia.org/wiki/"+page
+
+
 def add_feedback(title_page, score, user=""):
     """
     Funtion to add a feedback about a page to the user's feedback .csv file.
