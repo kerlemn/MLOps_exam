@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+import os
 
 from sklearn.linear_model import LogisticRegression
 
@@ -9,13 +9,21 @@ from loader import load_user_feedback
 from loader import load_model
 from loader import save_model
 
+import neptune
+
 import warnings
 warnings.filterwarnings("ignore")
 
 # Number of row in the sample dataset
-__k__       = 10
+__k__           = 10
 # Number of feed for each user to trigger the re-train
-__newfeed__ = 10 
+__newfeed__     = 10 
+# Pages dataset
+pages_df        = load_pages_dataset()
+# Neptune project name
+NEPTUNE_PROJECT = os.getenv('NEPTUNE_PROJECT')
+# Token for neptune.ai
+NEPTUNE_TOKEN   = os.getenv('NEPTUNE_TOKEN')
 
 def predict(user="", best=True) -> np.array:
     """
@@ -35,9 +43,8 @@ def predict(user="", best=True) -> np.array:
     reccomended_page: np.array
         The reccomended page based on the preferences of the user.
     """
-    # Load the pages dataset
-    pages_df = load_pages_dataset()
-    X        = pages_df.drop("TITLE", axis=1).values
+    # Remove the title from the pages dataset and get the values
+    X = pages_df.drop("TITLE", axis=1).values
 
     # Load the model
     model                     = load_model(user)
@@ -77,8 +84,6 @@ def train(user=""):
         User id to determine the preferences to use
     
     """
-    # Load the pages dataset
-    pages_df   = load_pages_dataset()
     # Load the pages of which the user gave a feedback
     feedback   = load_user_feedback(user)
 
@@ -98,18 +103,25 @@ def train(user=""):
     # Save the model
     save_model(user, LR)
 
-def getPage():
+def get_page(user="") -> str:
     """
-    Test shortcut
+    Function to get the Wikipedia page predicting it for the specified user.
+
+    Parameters
+    ----------
+    user: id
+        User id which gave the feedback
     """
-    page_info = predict()
+
+    page_info = predict(user=user)
     page      = page_info[0].replace(' ', '_')
-    return "https://en.wikipedia.org/wiki/"+page
+
+    return page
 
 
 def add_feedback(title_page, score, user=""):
     """
-    Funtion to add a feedback about a page to the user's feedback .csv file.
+    Function to add a feedback about a page to the user's feedback .csv file.
 
     Parameters
     ----------
@@ -120,12 +132,25 @@ def add_feedback(title_page, score, user=""):
     score: bool
         Score given to the page (0: dislike, 1:like)
     """
+    
+    # Save the user's feedback related to the page suggested on neptune to monitorate the prediction correctness
+    run = neptune.init_run(
+        project=NEPTUNE_PROJECT,
+        api_token=NEPTUNE_TOKEN,
+    )
 
+    run["user"] = user
+    run["predicted"] = title_page
+    run["score"] = score
+
+    run.stop()
+
+    # Save the feedback in the user's feedback .csv file
     with open(f"datasets/user{user}.csv", "a") as f:
         string = f"{title_page}\t{score}\n"
         f.writelines(string)
 
-    # Take the number of lines of the file
+    # Take the number of lines of the feedback .csv file
     with open(f"datasets/user{user}.csv", "r") as f:
         n = len(f.readlines())
 
@@ -135,13 +160,12 @@ def add_feedback(title_page, score, user=""):
         train(user)
 
 if __name__ == '__main__':
-    df_pages = load_pages_dataset()
-    titles = df_pages["TITLE"].values[:11]
+    # titles = pages_df["TITLE"].values[:11]
 
-    for title in titles:
-        add_feedback(title, np.random.randint(0, 1))
-    
+    # for title in titles:
+    #     add_feedback(title, np.random.randint(0, 1))
 
-    page_info = predict()
-    page      = page_info[0].replace(' ', '_')
-    print(f"https://en.wikipedia.org/wiki/{page}")
+    suggested_page = get_page()
+    print("https://en.wikipedia.org/wiki/" + suggested_page)
+    score = input("Rate the page (0: dislike, 1: like): ")
+    add_feedback(suggested_page, score)
