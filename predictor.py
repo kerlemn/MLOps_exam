@@ -20,15 +20,15 @@ warnings.filterwarnings("ignore")
 ####################################
 """
 # Number of row in the sample dataset
-__k__           = 10
+__k__               = 10
 # Number of feed for each user to trigger the re-train
-__newfeed__     = 10 
+__newfeed__         = 10 
 # Pages dataset
-pages_df        = load_pages_dataset()
+pages_df            = load_pages_dataset()
 # Neptune project name
-NEPTUNE_PROJECT = os.getenv('NEPTUNE_PROJECT')
+__neptune_project__ = os.getenv('NEPTUNE_PROJECT')
 # Token for neptune.ai
-NEPTUNE_TOKEN   = os.getenv('NEPTUNE_TOKEN')
+__neptune_token__   = os.getenv('NEPTUNE_TOKEN')
 
 """
 #############################
@@ -144,8 +144,8 @@ def add_feedback(title_page, score, user=""):
     
     # Save the user's feedback related to the page suggested on neptune to monitorate the prediction correctness
     run = neptune.init_run(
-        project=NEPTUNE_PROJECT,
-        api_token=NEPTUNE_TOKEN,
+        project  =__neptune_project__,
+        api_token=__neptune_token__,
     )
 
     run["user"] = user
