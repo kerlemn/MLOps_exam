@@ -14,6 +14,11 @@ import neptune
 import warnings
 warnings.filterwarnings("ignore")
 
+"""
+####################################
+### Global variables declaration ###
+####################################
+"""
 # Number of row in the sample dataset
 __k__           = 10
 # Number of feed for each user to trigger the re-train
@@ -25,6 +30,11 @@ NEPTUNE_PROJECT = os.getenv('NEPTUNE_PROJECT')
 # Token for neptune.ai
 NEPTUNE_TOKEN   = os.getenv('NEPTUNE_TOKEN')
 
+"""
+#############################
+### Functions declaration ###
+#############################
+"""
 def predict(user="", best=True) -> np.array:
     """
     Function to predict the possible pages that the user specified could like based on its preferences (given from the model trained on its preferences).
@@ -118,7 +128,6 @@ def get_page(user="") -> str:
 
     return page
 
-
 def add_feedback(title_page, score, user=""):
     """
     Function to add a feedback about a page to the user's feedback .csv file.
@@ -159,12 +168,27 @@ def add_feedback(title_page, score, user=""):
         print(f"{n} feedback: Retrain model for user {user}")
         train(user)
 
+"""
+#####################
+###     TESTS     ###
+#####################
+"""
 if __name__ == '__main__':
-    # titles = pages_df["TITLE"].values[:11]
+    """
+    ####################################################################
+    ### Test for the retrain of the model based on the new feedbacks ###
+    ####################################################################
+    """
+    # titles = pages_df["TITLE"].values[:__newfeed__]
 
     # for title in titles:
     #     add_feedback(title, np.random.randint(0, 1))
 
+    """
+    ##############################################################
+    ### Test for the predict and the score of a suggested page ###
+    ##############################################################
+    """
     suggested_page = get_page()
     print("https://en.wikipedia.org/wiki/" + suggested_page)
     score = input("Rate the page (0: dislike, 1: like): ")
