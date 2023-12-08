@@ -4,36 +4,103 @@
     <title>WikiTok</title>
   </head>
   <body>
+    <div id="usernameInput" style="text-align: center;">
+        <h2>Inserisci il tuo nome utente</h2>
+        <form onsubmit="submitUsername(event)">
+          <input type="text" id="username" placeholder="Nome utente" required>
+          <button type="submit">Conferma</button>
+        </form>
+        <p id="error" style="color: red; display: none;">Inserisci un nome utente valido</p>
+      </div>
+  
+      <div id="content" style="display: none;">
     <script>
         var actual = 0;
-        var pages = ["https://en.wikipedia.org/wiki/Galaxy", "https://en.wikipedia.org/wiki/Modbus"];
+        var pages = [
+            { url: "https://en.wikipedia.org/wiki/Galaxy", title: "Galaxy" },
+            { url: "https://en.wikipedia.org/wiki/Modbus", title: "Modbus" }
+        ];
+        var username = "";
         document.addEventListener('DOMContentLoaded', function() {
-            getMore();
-            document.getElementById("subpage").setAttribute("src", pages[actual]);
+            showPage();
         }, false);
-        function getMore(){
-            fetch("https://wikitok.onrender.com/predict")
+
+        function showPage() {
+            document.getElementById("subpage").setAttribute("src", pages[actual].url);
+        }
+
+        function like() {
+            savePreference(true);
+            next();
+        }
+
+        function dislike() {
+            savePreference(false);
+            next();
+        }
+
+        function submitUsername(event) {
+            event.preventDefault();
+            username = document.getElementById("username").value.trim();
+            if (username !== "") {
+              document.getElementById("usernameInput").style.display = "none";
+              document.getElementById("content").style.display = "block";
+              // Puoi eseguire qui le azioni successive al submit del nome utente, come mostrare la schermata principale
+            } else {
+              document.getElementById("error").style.display = "block";
+            }
+          }
+
+
+        function savePreference(preference) {
+            console.log("Valore booleano: " + preference);
+
+            fetch('/salva_dati', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: pages[actual].title,
+                    preference: preference,
+                    user: username // Modifica questo campo con l'utente corrente o l'ID dell'utente
+                })
+            })
             .then(response => {
-                response.json().then(data => pages.push(data.Pages))
+                console.log('Dati salvati nel database con successo');
+                // Puoi gestire ulteriori azioni qui dopo aver salvato i dati nel database
+            })
+            .catch(error => {
+                console.error('Errore durante il salvataggio dei dati nel database:', error);
             });
-            
         }
-        function next(){
-            getMore();
-            if(actual<pages.length-1)
-                document.getElementById("subpage").setAttribute("src", pages[++actual]);
+
+        function next() {
+            var currentPage = pages[actual];
+            actual++;
+            if (actual >= pages.length) {
+                actual = 0;
+            }
+            showPage();
+            return { title: currentPage.title, preference: undefined };
         }
-        function previous(){
-            if(actual!=0)
-                document.getElementById("subpage").setAttribute("src", pages[--actual]);
+
+        function previous() {
+            actual--;
+            if (actual < 0) {
+                actual = pages.length - 1;
+            }
+            showPage();
         }
     </script>
-    <iframe id="subpage" width=100% style="height: 80vh;"></iframe>
-    <div width=30% style="margin: auto; text-align: center;">
-        <button style="font-size: 80px;padding-left:30px;padding-right:30px;" onclick={previous()}> &lt
-        </button>
-        <button style="font-size: 80px;padding-left:30px;padding-right:30px;" onclick={next()}> &gt
-        </button>
+    
+    <iframe id="subpage" width="100%" style="height: 80vh;"></iframe>
+
+    <div width="100%" style="text-align: center;">
+        <!-- Pulsanti per previous, like e dislike -->
+        <button style="font-size: 80px;" onclick="previous()">←</button>
+        <button style="font-size: 80px;" onclick="like()">👍</button>
+        <button style="font-size: 80px;" onclick="dislike()">👎</button>
     </div>
-</body>
+  </body>
 </html>
