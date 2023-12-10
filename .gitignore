@@ -1,0 +1,3 @@
+.gitignore
+run_predictor.sh
+__pycache__/*

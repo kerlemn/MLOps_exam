@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from predictor import add_feedback
+from backend.predictor import add_feedback
 
 app = Flask(__name__)
 

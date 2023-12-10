@@ -4,7 +4,7 @@ from user_database import UserDatabase
 def test():
 
     # create a user database (default path = 'data\\user_database.csv')
-    user_database = UserDatabase()
+    user_database = UserDatabase("data/user.csv")
 
     # add some pages
     user_database.add_page('Linear algebra', 1)
