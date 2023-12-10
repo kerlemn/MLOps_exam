@@ -2,6 +2,7 @@ import pickle as pkl
 import pandas as pd
 
 from data_engineering.wiki_database import WikiDatabase
+from data_engineering.user_database import UserDatabase
 
 from pathlib import Path
 
@@ -20,7 +21,7 @@ def load_users_dataset() -> pd.DataFrame:
     users_df = pd.read_csv(f"{__path__}/datasets/users.csv", sep="\t")
     return users_df
 
-def load_user_feedback(user="") -> pd.DataFrame:
+def load_user_feedback(user:str) -> pd.DataFrame:
     """
     Function to load the "userX_feedback.csv" data.
 
@@ -29,9 +30,35 @@ def load_user_feedback(user="") -> pd.DataFrame:
     pd.Dataframe
         Pandas Dataframe containing the information about the feedback of the specified user.
     """
+    user_database = UserDatabase(f"{__path__}/data_engineering/data/user{user}.csv")
 
-    feedback_df = pd.read_csv(f"{__path__}/datasets/user{user}.csv", sep="\t")
-    return feedback_df
+    return user_database.data
+
+def add_feedback(user:str, title:str, score:int):
+    """
+    Function to add a feedback to the user's feedback.
+
+    Parameters
+    ----------
+    user: int
+        User id which gave the feedback
+    title: str
+        Title of the page rated
+    score: int
+        Score given to the page
+
+    Returns
+    -------
+    n: int
+        Number of feedbacks given by the user
+    """
+    user_database = UserDatabase(f"{__path__}/data_engineering/data/user{user}.csv")
+    user_database.add_page(title, score)
+    user_database.save()
+
+    n = len(user_database.data)
+
+    return n
 
 def load_model(user:str):
     """
@@ -48,8 +75,11 @@ def load_model(user:str):
         Scikit-Learn model
     """
 
-    with open(f"{__path__}/models/model{user}.pkl", "rb") as f:
-        model = pkl.load(f)
+    try:
+        with open(f"{__path__}/models/model{user}.pkl", "rb") as f:
+            model = pkl.load(f)
+    except:
+        model = None
     
     return model
     
@@ -82,14 +112,14 @@ def get_random_pages(n = 10) -> pd.DataFrame:
     pages: dataframe
         dataframe of information of the pages retrieved
     """
-    wiki_database = WikiDatabase(f'{__path__}/data/wiki_database')
+    wiki_database = WikiDatabase(f'{__path__}/data_engineering/data/wiki_database')
 
     titles = wiki_database.get_random_pages(n)
     pages  = wiki_database.get_training_data(titles)
 
     return pages
 
-def get_training_data(user=""):
+def get_training_data(user:str):
     """
     Function to get the training data for the specified user.
     
@@ -105,17 +135,19 @@ def get_training_data(user=""):
     y: np.array
         Array of the scores of the pages
     """
-    wiki_database = WikiDatabase(f'{__path__}/data/wiki_database')
+    wiki_database = WikiDatabase(f'{__path__}/data_engineering/data/wiki_database')
     feedback_df   = load_user_feedback(user)
 
-    pages = wiki_database.get_training_data(feedback_df["TITLE"].values)
-    
+    rated_titles = feedback_df["TITLE"].values
+
+    pages = wiki_database.get_training_data(rated_titles)
+
     X = pages.drop("TITLE", axis=1).values
     y = feedback_df["SCORE"].values
 
     return X, y
 
-def get_rated_pages(user=""):
+def get_rated_pages(user:str):
     """
     Function to get the title of the pages rated from the user.
     

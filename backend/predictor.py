@@ -52,22 +52,26 @@ def predict(user, best=True) -> np.array:
     # Load the dataset
     pages = loader.get_random_pages(__k__)
     X     = pages.drop("TITLE", axis=1).values
+
     # Load the model
     model = loader.load_model(user)
+    if model is not None:
+        # Predict the probabilities
+        probabilities = model.predict_proba(X)[:, 1]
 
-    # Predict the probabilities
-    probabilities = model.predict_proba(X)[:, 1]
+        if best:
+            # Get the index of the most suggested page
+            reccomended_idx           = np.argmax(probabilities)
+        else:
+            # Calculate the probability for each element to be chosen
+            sum_selected              = np.sum(probabilities)
+            reccomended_probabilities = probabilities/sum_selected
 
-    if best:
-        # Get the index of the most suggested page
-        reccomended_idx           = np.argmax(probabilities)
+            # Select an element with respect to the probabilities
+            reccomended_idx           = np.random.choice(range(__k__), 1, p=reccomended_probabilities)[0]
     else:
-        # Calculate the probability for each element to be chosen
-        sum_selected              = np.sum(probabilities)
-        reccomended_probabilities = probabilities/sum_selected
-
-        # Select an element with respect to the probabilities
-        reccomended_idx           = np.random.choice(range(__k__), 1, p=reccomended_probabilities)[0]
+        # If the model is not trained yet, return a random page
+        reccomended_idx = np.random.randint(0, __k__)
 
     # Get the original index of the page
     reccomended_page = pages.values[reccomended_idx]
@@ -85,12 +89,31 @@ def train(user):
     
     """
     X, y = loader.get_training_data(user)
-    
+
+    # If the user has only one class, don't train the model
+    if np.unique(y).shape[0] == 1:
+        print(f"User {user} has only one class, train when more feedback is given")
+        return
+
     # Fit the model
-    LR = LogisticRegression(max_iter=3000).fit(X, y)
+    clf = LogisticRegression(max_iter=3000).fit(X, y)
 
     # Save the model
-    loader.save_model(user, LR)
+    loader.save_model(user, clf)
+
+    # Save the user's feedback related to the page suggested on neptune to monitorate the prediction correctness
+    run = neptune.init_run(
+        project  ="WikiTok/WikiTok"#__neptune_project__,
+        # api_token=__neptune_token__,
+    )
+
+    run["user"] = user
+    run["parameters"] = clf.get_params()
+    run["coefficients"] = clf.coef_
+    run["intercept"] = clf.intercept_
+    run["rows"] = len(y)
+
+    run.stop()
 
 def get_page(user) -> str:
     """
@@ -103,9 +126,10 @@ def get_page(user) -> str:
     """
 
     page_info = predict(user=user)
-    page      = page_info[0].replace(' ', '_')
+    page      = page_info[0]
+    url       = page.replace(' ', '_')
 
-    return page
+    return {"url": f"https://en.wikipedia.org/wiki/{url}", "title": page}
 
 def add_feedback(user:str, title_page: str, score: str):
     """
@@ -120,26 +144,21 @@ def add_feedback(user:str, title_page: str, score: str):
     score: bool
         Score given to the page (0: dislike, 1:like)
     """
-    # Save the user's feedback related to the page suggested on neptune to monitorate the prediction correctness
-    run = neptune.init_run(
-        project  ="WikiTok/WikiTok"#__neptune_project__,
-        # api_token=__neptune_token__,
-    )
+    # # Save the user's feedback related to the page suggested on neptune to monitorate the prediction correctness
+    # run = neptune.init_run(
+    #     project  ="WikiTok/WikiTok"#__neptune_project__,
+    #     # api_token=__neptune_token__,
+    # )
 
-    run["user"] = user
-    run["predicted"] = title_page
-    run["score"] = score
+    # run["user"] = user
+    # run["predicted"] = title_page
+    # run["score"] = score
 
-    run.stop()
+    # run.stop()
 
-    # Save the feedback in the user's feedback .csv file
-    with open(f"{__path__}/datasets/user{user}.csv", "a") as f:
-        string = f"{title_page}\t{score}\n"
-        f.writelines(string)
-
-    # Take the number of lines of the feedback .csv file
-    with open(f"{__path__}/datasets/user{user}.csv", "r") as f:
-        n = len(f.readlines())
+    # Add the feedback to the user's feedback .csv file
+    # And obtain the number of feedbacks given by the user
+    n = loader.add_feedback(user, title_page, score)
 
     # Every __newfeed__ feedback re-train the model
     if n % __newfeed__ == 0:
@@ -165,50 +184,3 @@ def get_URLs(user:str) -> np.array:
 
     pages = [{ "url": f"https://en.wikipedia.org/wiki/{title}", "title": title } for title in titles]
     return pages
-
-"""
-#####################
-###     TESTS     ###
-#####################
-"""
-if __name__ == '__main__':
-    user = ""
-    """
-    ##########################################
-    ### Creation of example user feedbacks ###
-    ##########################################
-    """
-    # import pandas as pd
-    # pages = get_random_pages(100)
-    # df = pd.DataFrame(np.array([pages["TITLE"].values, [np.random.randint(0,2) for _ in range(100)]]).T, columns=["TITLE", "SCORE"])
-    # df.to_csv(f"datasets/user{user}.csv", sep="\t", index=False)
-
-
-
-    """
-    ####################################################################
-    ### Test for the retrain of the model based on the new feedbacks ###
-    ####################################################################
-    """
-    # titles = pages_df["TITLE"].values[:__newfeed__]
-
-    # for title in titles:
-    #     add_feedback(user, title, np.random.randint(0, 1))
-    
-    """
-    ##############################################################
-    ### Test for the predict and the score of a suggested page ###
-    ##############################################################
-    """
-    # suggested_page = get_page(user)
-    # print("https://en.wikipedia.org/wiki/" + suggested_page)
-    # score = input("Rate the page (0: dislike, 1: like): ")
-    # add_feedback(user, suggested_page, score)
-
-    """
-    ######################################################
-    ### Test to get all the URL for the specified user ###
-    ######################################################
-    """
-    URLs = get_URLs(user)
-    print(URLs)
