@@ -1,106 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <title>WikiTok</title>
-  </head>
-  <body>
-    <div id="usernameInput" style="text-align: center;">
-        <h2>Inserisci il tuo nome utente</h2>
-        <form onsubmit="submitUsername(event)">
-          <input type="text" id="username" placeholder="Nome utente" required>
-          <button type="submit">Conferma</button>
-        </form>
-        <p id="error" style="color: red; display: none;">Inserisci un nome utente valido</p>
-      </div>
-  
-      <div id="content" style="display: none;">
-    <script>
-        var actual = 0;
-        var pages = [
-            { url: "https://en.wikipedia.org/wiki/Galaxy", title: "Galaxy" },
-            { url: "https://en.wikipedia.org/wiki/Modbus", title: "Modbus" }
-        ];
-        var username = "";
-        document.addEventListener('DOMContentLoaded', function() {
-            showPage();
-        }, false);
+    <style>
 
-        function showPage() {
-            document.getElementById("subpage").setAttribute("src", pages[actual].url);
+        #wikipediaLogo {
+            display: block; /* Impostalo su "none" per nasconderlo */
+            text-align: center;
+            margin-top: 100px;
         }
 
-        function like() {
-            savePreference(true);
-            next();
+        /* Stili dei pulsanti */
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+            margin: 0 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 16px;
         }
 
-        function dislike() {
-            savePreference(false);
-            next();
+        button.like {
+            background-color:#F44336 ;
+            color: white;
         }
 
-        function submitUsername(event) {
-            event.preventDefault();
-            username = document.getElementById("username").value.trim();
-            if (username !== "") {
-              document.getElementById("usernameInput").style.display = "none";
-              document.getElementById("content").style.display = "block";
-              // Puoi eseguire qui le azioni successive al submit del nome utente, come mostrare la schermata principale
-            } else {
-              document.getElementById("error").style.display = "block";
-            }
-          }
-
-
-        function savePreference(preference) {
-            console.log("Valore booleano: " + preference);
-
-            fetch('/salva_dati', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    title: pages[actual].title,
-                    preference: preference,
-                    user: username // Modifica questo campo con l'utente corrente o l'ID dell'utente
-                })
-            })
-            .then(response => {
-                console.log('Dati salvati nel database con successo');
-                // Puoi gestire ulteriori azioni qui dopo aver salvato i dati nel database
-            })
-            .catch(error => {
-                console.error('Errore durante il salvataggio dei dati nel database:', error);
-            });
+        button.dislike {
+            background-color: #4CAF50;
+            color: white;
         }
 
-        function next() {
-            var currentPage = pages[actual];
-            actual++;
-            if (actual >= pages.length) {
-                actual = 0;
-            }
-            showPage();
-            return { title: currentPage.title, preference: undefined };
+        button.previous {
+            background-color: #ccc;
         }
 
-        function previous() {
-            actual--;
-            if (actual < 0) {
-                actual = pages.length - 1;
-            }
-            showPage();
+        /* Effetto hover sui pulsanti */
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
         }
-    </script>
+
+        /* Nuovi stili per il contenitore dei pulsanti */
+        #buttonsContainer {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
     
-    <iframe id="subpage" width="100%" style="height: 80vh;"></iframe>
-
-    <div width="100%" style="text-align: center;">
-        <!-- Pulsanti per previous, like e dislike -->
-        <button style="font-size: 80px;" onclick="previous()">←</button>
-        <button style="font-size: 80px;" onclick="like()">👍</button>
-        <button style="font-size: 80px;" onclick="dislike()">👎</button>
+    <div id="usernameInput" style="text-align: center;">
+        <h1>WikiTok</h1>
+        <h2 style="font-size: 20px; font-weight: normal;">Enter your username</h2>
+        <form onsubmit="submitUsername(event)">
+            <input type="text" id="username" placeholder="Username" required>
+            <button type="submit">Confirm</button>
+        </form>
+        <p id="error" style="color: red; display: none;">Please enter a valid username</p>
     </div>
-  </body>
+    <div id="wikipediaLogo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia Logo" width="250">
+    </div>
+
+        <script>
+            var actual = 0;
+            var pages = [
+                { url: "https://en.wikipedia.org/wiki/Galaxy", title: "Galaxy" },
+                { url: "https://en.wikipedia.org/wiki/Modbus", title: "Modbus" }
+            ];
+            var username = "";
+            document.addEventListener('DOMContentLoaded', function() {
+                showPage();
+            }, false);
+
+            function showPage() {
+                document.getElementById("subpage").setAttribute("src", pages[actual].url);
+            }
+
+            function like() {
+                savePreference(true);
+                next();
+            }
+
+            function dislike() {
+                savePreference(false);
+                next();
+            }
+
+            function submitUsername(event) {
+                event.preventDefault();
+                username = document.getElementById("username").value.trim();
+                if (username !== "") {
+                    document.getElementById("usernameInput").style.display = "none";
+                    document.getElementById("content").style.display = "block";
+                    document.getElementById("wikipediaLogo").style.display = "none"; // Nasconde il logo di Wikipedia
+                    // You can perform actions here after submitting the username, like showing the main screen
+                } else {
+                    document.getElementById("error").style.display = "block";
+                }
+            }
+
+
+            function savePreference(preference) {
+                console.log("Boolean value: " + preference);
+
+                fetch('/save_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: pages[actual].title,
+                        preference: preference,
+                        user: username // Change this field to the current user or user ID
+                    })
+                })
+                .then(response => {
+                    console.log('Data saved to the database successfully');
+                    // You can handle further actions here after saving data to the database
+                })
+                .catch(error => {
+                    console.error('Error while saving data to the database:', error);
+                });
+            }
+
+            function next() {
+                var currentPage = pages[actual];
+                actual++;
+                if (actual >= pages.length) {
+                    actual = 0;
+                }
+                showPage();
+                return { title: currentPage.title, preference: undefined };
+            }
+
+            function previous() {
+                actual--;
+                if (actual < 0) {
+                    actual = pages.length - 1;
+                }
+                showPage();
+            }
+        </script>
+    
+        <div id="content" style="display: none;">
+            <iframe id="subpage" width="100%" style="height: 80vh;"></iframe>
+    
+            <!-- Pulsanti per previous, like e dislike -->
+            <div id="buttonsContainer">
+                <button class="previous" onclick="previous()">←</button>
+                <button class="like" onclick="dislike()">Dislike👎</button>
+                <button class="dislike" onclick="like()">Like👍</button>
+            </div>
+        </div>
+</body>
 </html>
