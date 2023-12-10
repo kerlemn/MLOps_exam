@@ -1,15 +1,13 @@
 import numpy as np
 import neptune
-import os
-import sys
-from pathlib import Path
 
+import os
+from pathlib import Path
 __path__ = Path(__file__).parent
 
 from sklearn.linear_model import LogisticRegression
 
 import loader
-
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -23,10 +21,10 @@ warnings.filterwarnings("ignore")
 __k__               = 10
 # Number of feed for each user to trigger the re-train
 __newfeed__         = 10 
-# Neptune project name
-__neptune_project__ = str(os.getenv('NEPTUNE_PROJECT'))
-# Token for neptune.ai
-__neptune_token__   = str(os.getenv('NEPTUNE_TOKEN'))
+# # Neptune project name
+# __neptune_project__ = str(os.getenv('NEPTUNE_PROJECT'))
+# # Token for neptune.ai
+# __neptune_token__   = str(os.getenv('NEPTUNE_TOKEN'))
 
 """
 #############################
