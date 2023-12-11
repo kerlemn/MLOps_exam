@@ -143,7 +143,7 @@ def get_pages(user:str) -> str:
 
     page_info = predict(user=user)
 
-    return [{"url": f"https://en.wikipedia.org/wiki/{pi.replace(' ', '_')}", "title": pi} for pi in page_info]
+    return [{"url": f"https://en.wikipedia.org/wiki/{pg.replace(' ', '_')}", "title": pg} for pg in page_info]
 
 def add_feedback(user:str, title_page: str, score: str):
     """
