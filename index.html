@@ -73,6 +73,7 @@
             var username = "";
             document.addEventListener('DOMContentLoaded', function() {
                 showPage();
+                getMore();
             }, false);
 
             function showPage() {
@@ -103,7 +104,9 @@
             }
 
             function getMore(){
-                fetch("https://wikitok.onrender.com/predict")
+                fetch("https://wikitok.onrender.com/predict?" + new URLSearchParams({
+                    usr: username
+                }))
                 .then(response => {
                     if (!response.ok) {
                     throw new Error('Network response was not ok');

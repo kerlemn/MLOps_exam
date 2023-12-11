@@ -30,9 +30,6 @@ class Pref(BaseModel):
     score: str
     user: str
 
-class User(BaseModel):
-    user: str
-
 @app.get("/")
 def read_root():
     print("Welcome")
@@ -40,9 +37,9 @@ def read_root():
 
 
 @app.get("/predict")
-def pre(usr: User):
-    print("Requesting pages from :"+ usr.user)
-    return {"Pages":get_pages(usr.user)}
+def pre(usr: str):
+    print("Requesting pages from :"+ usr)
+    return {"Pages":get_pages(usr)}
 
 @app.post('/save_data')
 def save_data(preference: Pref):
