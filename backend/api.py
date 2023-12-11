@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from predictor import get_pages, add_feedback
 from pydantic import BaseModel
+from json import dumps
 import re
 
 __base_URL__ = "https://en.wikipedia.org/wiki/"
@@ -39,7 +40,7 @@ def read_root():
 @app.get("/predict")
 def pre(usr: str):
     print("Requesting pages from :"+ usr)
-    return {"Pages":get_pages(usr)}
+    return {"Pages":dumps(get_pages(usr))}
 
 @app.post('/save_data')
 def save_data(preference: Pref):
