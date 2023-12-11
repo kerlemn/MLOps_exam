@@ -73,7 +73,6 @@
             var username = "";
             document.addEventListener('DOMContentLoaded', function() {
                 showPage();
-                getMore();
             }, false);
 
             function showPage() {
@@ -98,6 +97,7 @@
                     document.getElementById("content").style.display = "block";
                     document.getElementById("wikipediaLogo").style.display = "none"; // Nasconde il logo di Wikipedia
                     // You can perform actions here after submitting the username, like showing the main screen
+                    getMore();
                 } else {
                     document.getElementById("error").style.display = "block";
                 }
