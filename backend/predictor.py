@@ -115,7 +115,7 @@ def train(user):
 
     run.stop()
 
-def get_page(user) -> str:
+def get_page(user:str) -> str:
     """
     Function to get the Wikipedia page predicting it for the specified user.
 
@@ -130,6 +130,20 @@ def get_page(user) -> str:
     url       = page.replace(' ', '_')
 
     return {"url": f"https://en.wikipedia.org/wiki/{url}", "title": page}
+
+def get_pages(user:str) -> str:
+    """
+    Function to get the Wikipedia page predicting it for the specified user.
+
+    Parameters
+    ----------
+    user: id
+        User id which gave the feedback
+    """
+
+    page_info = predict(user=user)
+
+    return [{"url": f"https://en.wikipedia.org/wiki/{pi.replace(' ', '_')}", "title": pi} for pi in page_info]
 
 def add_feedback(user:str, title_page: str, score: str):
     """

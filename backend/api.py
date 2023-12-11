@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from predictor import get_page
+from predictor import get_pages, add_feedback
+from pydantic import BaseModel
 import re
 
 __base_URL__ = "https://en.wikipedia.org/wiki/"
@@ -24,13 +25,26 @@ __version__ = "0.1.0"
 BASE_DIR = Path(__file__).resolve(strict=True).parent
 
 
+class Pref(BaseModel):
+    title: str
+    score: str
+    user: str
+
+class User(BaseModel):
+    user: str
+
 @app.get("/")
 def read_root():
-    print("Got it")
-    return {"Hello": "World"}
+    print("Welcome")
+    return {"Welcome": "to the api"}
 
 
 @app.get("/predict")
-def pre():
-    print("Got it")
-    return {"Pages":__base_URL__+get_page()}
+def pre(usr: User):
+    print("Requesting pages from :"+ usr.user)
+    return {"Pages":get_pages(usr.user)}
+
+@app.post('/save_data')
+def save_data(preference: Pref):
+    print("Saving preference :"+ preference)
+    add_feedback(preference.user, preference.title, preference.score)

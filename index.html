@@ -80,12 +80,12 @@
             }
 
             function like() {
-                savePreference(true);
+                savePreference("1");
                 next();
             }
 
             function dislike() {
-                savePreference(false);
+                savePreference("0");
                 next();
             }
 
@@ -102,11 +102,23 @@
                 }
             }
 
+            function getMore(){
+                fetch("https://wikitok.onrender.com/predict")
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                    }
+                })
+                .then(data => {
+                    const obj = JSON.parse(data);
+                    pages.concat(obj);
+                });
+            }
 
             function savePreference(preference) {
                 console.log("Boolean value: " + preference);
 
-                fetch('/save_data', {
+                fetch("https://wikitok.onrender.com/save_data", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
