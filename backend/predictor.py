@@ -7,7 +7,7 @@ __path__ = Path(__file__).parent
 
 from sklearn.linear_model import LogisticRegression
 
-import loader
+import helper
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -52,11 +52,11 @@ def predict(user:str, n:int, best=True) -> np.array:
     n_row = __k__ * n
 
     # Load the dataset
-    pages = loader.get_random_pages(n_row)
+    pages = helper.get_random_pages(n_row)
     X     = pages.drop("TITLE", axis=1).values
 
     # Load the model
-    model = loader.load_model(user)
+    model = helper.load_model(user)
     if model is not None:
         # Predict the probabilities
         probabilities = model.predict_proba(X)[:, 1]
@@ -80,36 +80,6 @@ def predict(user:str, n:int, best=True) -> np.array:
 
     return reccomended_page
 
-def get_best_coefficients(coef:list, n:int=10):
-    """
-    Function to get the best coefficients for the model.
-
-    Parameters
-    ----------
-    coef: list
-        List of the coefficients
-
-    Returns
-    -------
-    best_coefficients: list
-        List of the best coefficients
-    """
-    # Get the index of the best coefficients
-    best_coefficients_idx = np.argsort(np.abs(coef))
-    columns_name          = loader.get_columns()
-
-    # Get the best coefficients
-    best_coefficients     = coef[best_coefficients_idx]
-    best_names            = columns_name[best_coefficients_idx]
-
-    # Get the best n coefficients
-    best_coefficients     = best_coefficients[-n:]
-    best_names            = best_names[-n:]
-
-    coefficients = {name: coefficient for name, coefficient in zip(best_names, best_coefficients)}
-
-    return coefficients
-
 def train(user:str):
     """
     Function to train a new model for the given user id based on its preferences and save it in a pickle file.
@@ -119,7 +89,7 @@ def train(user:str):
     user: str
         User id to determine the preferences to use
     """
-    X, y = loader.get_training_data(user)
+    X, y = helper.get_training_data(user)
 
     # If the user has only one class, don't train the model
     if np.unique(y).shape[0] == 1:
@@ -130,7 +100,7 @@ def train(user:str):
     clf = LogisticRegression(max_iter=3000).fit(X, y)
 
     # Save the model
-    loader.save_model(user, clf)
+    helper.save_model(user, clf)
 
     # Save the user's feedback related to the page suggested on neptune to monitorate the prediction correctness
     run = neptune.init_run(
@@ -140,7 +110,7 @@ def train(user:str):
 
     run["user"] = user
     run["parameters"] = clf.get_params()
-    run["coefficients"] = get_best_coefficients(clf.coef_[0])
+    run["coefficients"] = helper.get_best_coefficients(clf.coef_[0])
     run["intercept"] = clf.intercept_
     run["rows"] = len(y)
 
@@ -199,7 +169,7 @@ def add_feedback(user:str, title_page: str, score: int):
 
     # Add the feedback to the user's feedback .csv file
     # And obtain the number of feedbacks given by the user
-    n = loader.add_feedback(user, title_page, score)
+    n = helper.add_feedback(user, title_page, score)
 
     # Every __newfeed__ feedback re-train the model
     if n % __newfeed__ == 0:
@@ -221,7 +191,7 @@ def get_URLs(user:str) -> np.array:
         Array of the URL of the user's rated pages
     """
     # Get the titles rated by the user
-    titles = loader.get_rated_pages(user)
+    titles = helper.get_rated_pages(user)
 
     pages = [{ "url": f"https://en.wikipedia.org/wiki/{title}", "title": title } for title in titles]
     return pages

@@ -1,5 +1,6 @@
 import pickle as pkl
 import pandas as pd
+import numpy  as np
 
 from data_engineering.wiki_database import WikiDatabase
 from data_engineering.user_database import UserDatabase
@@ -127,13 +128,22 @@ def get_training_data(user:str):
     y: np.array
         Array of the scores of the pages
     """
-    wiki_database = WikiDatabase(f'{__path__}/data_engineering/data/wiki_database')
-    feedback_df   = load_user_feedback(user)
+    # Load the data
+    wiki_database  = WikiDatabase(f'{__path__}/data_engineering/data/wiki_database')
+    feedback_df    = load_user_feedback(user)
 
-    rated_titles = feedback_df["TITLE"].values
+    # Remove the duplicated titles from the feedback dataframe but removing the oldest ones
+    feedback_title = feedback_df["TITLE"]
+    if feedback_title.duplicated().any():
+        titles = feedback_title[feedback_title.duplicated()]
+        idxs   = [feedback_title[feedback_title == title].index[0] for title in titles]
+    feedback_df = feedback_df.drop(idxs)
 
-    pages = wiki_database.get_training_data(rated_titles)
+    # Get the pages information
+    rated_titles   = feedback_df["TITLE"].values
+    pages          = wiki_database.get_training_data(rated_titles)
 
+    # Get the training data
     X = pages.drop("TITLE", axis=1).values
     y = feedback_df["SCORE"].values
 
@@ -177,3 +187,33 @@ def get_rated_pages(user:str):
 
     titles = feedback_df["TITLE"].values
     return titles
+
+def get_best_coefficients(coef:list, n:int=10):
+    """
+    Function to get the best coefficients for the model.
+
+    Parameters
+    ----------
+    coef: list
+        List of the coefficients
+
+    Returns
+    -------
+    best_coefficients: list
+        List of the best coefficients
+    """
+    # Get the index of the best coefficients
+    best_coefficients_idx = np.argsort(np.abs(coef))
+    columns_name          = get_columns()
+
+    # Get the best coefficients
+    best_coefficients     = coef[best_coefficients_idx]
+    best_names            = columns_name[best_coefficients_idx]
+
+    # Get the best n coefficients
+    best_coefficients     = best_coefficients[-n:]
+    best_names            = best_names[-n:]
+
+    coefficients = {name: coefficient for name, coefficient in zip(best_names, best_coefficients)}
+
+    return coefficients
