@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore")
 ### Global variables declaration ###
 ####################################
 """
-# Number of row in the sample dataset
+# Coefficient for number of row in the predict dataset
 __k__               = 10
 # Number of feed for each user to trigger the re-train
 __newfeed__         = 10 
@@ -31,26 +31,28 @@ __newfeed__         = 10
 ### Functions declaration ###
 #############################
 """
-def predict(user, best=True) -> np.array:
+def predict(user:str, n:int, best=True) -> np.array:
     """
     Function to predict the possible pages that the user specified could like based on its preferences (given from the model trained on its preferences).
 
     Parameters
     ----------
-    user: int
+    user: str
         The id to determine the model to use
-    k: int, optional
-        The number of row to keep from the whole dataset
+    n: int, optional
+        The number of pages to return
     best: bool, optional
         Boolean to select if return the most suggested page or just one of the several suggested pages with respect to their scores
     
     Returns
     -------
     reccomended_page: np.array
-        The reccomended page based on the preferences of the user.
+        The reccomended pages based on the preferences of the user.
     """
+    n_row = __k__ * n
+
     # Load the dataset
-    pages = loader.get_random_pages(__k__)
+    pages = loader.get_random_pages(n_row)
     X     = pages.drop("TITLE", axis=1).values
 
     # Load the model
@@ -61,32 +63,31 @@ def predict(user, best=True) -> np.array:
 
         if best:
             # Get the index of the most suggested page
-            reccomended_idx           = np.argmax(probabilities)
+            reccomended_idx           = np.argsort(probabilities)[-n:]
         else:
             # Calculate the probability for each element to be chosen
             sum_selected              = np.sum(probabilities)
             reccomended_probabilities = probabilities/sum_selected
 
             # Select an element with respect to the probabilities
-            reccomended_idx           = np.random.choice(range(__k__), 1, p=reccomended_probabilities)[0]
+            reccomended_idx           = np.random.choice(range(n_row), n, p=reccomended_probabilities, replace=False)
     else:
         # If the model is not trained yet, return a random page
-        reccomended_idx = np.random.randint(0, __k__)
+        reccomended_idx = np.random.randint(0, n_row, n)
 
     # Get the original index of the page
     reccomended_page = pages.values[reccomended_idx]
 
     return reccomended_page
 
-def train(user):
+def train(user:str):
     """
     Function to train a new model for the given user id based on its preferences and save it in a pickle file.
 
     Parameters
     ----------
-    user: int
+    user: str
         User id to determine the preferences to use
-    
     """
     X, y = loader.get_training_data(user)
 
@@ -115,7 +116,7 @@ def train(user):
 
     run.stop()
 
-def get_page(user) -> str:
+def get_page(user:str, n=1, best=True) -> list:
     """
     Function to get the Wikipedia page predicting it for the specified user.
 
@@ -123,13 +124,23 @@ def get_page(user) -> str:
     ----------
     user: id
         User id which gave the feedback
+    n: int, (optional)
+        Number of pages to return
+
+    Returns
+    -------
+    page: list
+        List of dictionary containing the url and the title of the pages
     """
 
-    page_info = predict(user=user)
-    page      = page_info[0]
-    url       = page.replace(' ', '_')
+    pages_info = predict(user=user, n=n, best=best)
+    pages      = pages_info[:, 0]
+    urls       = [url.replace(' ', '_') for url in pages]
 
-    return {"url": f"https://en.wikipedia.org/wiki/{url}", "title": page}
+    suggested  =  [{"url": f"https://en.wikipedia.org/wiki/{url}", "title": page} 
+                   for url, page in zip(urls, pages)]
+
+    return suggested
 
 def add_feedback(user:str, title_page: str, score: str):
     """

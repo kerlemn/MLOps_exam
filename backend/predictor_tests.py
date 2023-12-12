@@ -1,4 +1,4 @@
-from predictor import add_feedback, get_page, get_URLs
+from predictor import add_feedback, get_page, get_URLs, predict
 import loader
 
 """
@@ -7,7 +7,7 @@ import loader
 #####################
 """
 if __name__ == '__main__':
-    user = 3
+    user = 2
 
     """
     ##########################################
@@ -36,10 +36,11 @@ if __name__ == '__main__':
     ### Test for the predict and the score of a suggested page ###
     ##############################################################
     """
-    # suggested_page = get_page(user)
-    # print(suggested_page["url"])
-    # score = input("Rate the page (0: dislike, 1: like): ")
-    # add_feedback(user, suggested_page["title"], int(score))
+    suggested_pages = get_page(user=user, n=5, best=True)
+    for suggested in suggested_pages:
+        print(suggested["url"])
+        score = input("Rate the page (0: dislike, 1: like): ")
+        add_feedback(user, suggested["title"], int(score))
 
 
     """
@@ -47,6 +48,6 @@ if __name__ == '__main__':
     ### Test to get all the URL for the specified user ###
     ######################################################
     """
-    URLs = get_URLs(user)
-    print(URLs)
-    print((len(URLs)))
+    # URLs = get_URLs(user)
+    # print(URLs)
+    # print((len(URLs)))

@@ -8,22 +8,14 @@ from pathlib import Path
 
 __path__ = Path(__file__).parent
 
-def load_users_dataset() -> pd.DataFrame:
-    """
-    Function to load the "users.csv" data.
-
-    Returns
-    -------
-    pd.Dataframe
-        Pandas Dataframe containing the information about the users.
-    """
-
-    users_df = pd.read_csv(f"{__path__}/datasets/users.csv", sep="\t")
-    return users_df
-
 def load_user_feedback(user:str) -> pd.DataFrame:
     """
     Function to load the "userX_feedback.csv" data.
+
+    Parameters
+    ----------
+    user: str
+        User id which gave the feedback
 
     Returns
     -------
@@ -40,7 +32,7 @@ def add_feedback(user:str, title:str, score:int):
 
     Parameters
     ----------
-    user: int
+    user: str
         User id which gave the feedback
     title: str
         Title of the page rated
@@ -66,7 +58,7 @@ def load_model(user:str):
 
     Parameters
     ----------
-    user: int
+    user: str
         The id to determine the model to use
 
     Returns
@@ -89,7 +81,7 @@ def save_model(user:str, model):
 
     Parameters
     ----------
-    user: int
+    user: str
         The id to determine whose the model is
     model:
         Scikit-Learn model to save
@@ -109,7 +101,7 @@ def get_random_pages(n = 10) -> pd.DataFrame:
 
     Returns
     -------
-    pages: dataframe
+    pages: pd.DataFrame
         dataframe of information of the pages retrieved
     """
     wiki_database = WikiDatabase(f'{__path__}/data_engineering/data/wiki_database')
@@ -125,7 +117,7 @@ def get_training_data(user:str):
     
     Parameters
     ----------
-    user: int
+    user: str
         User id which gave the feedback
 
     Returns
@@ -153,7 +145,7 @@ def get_rated_pages(user:str):
     
     Parameters
     ----------
-    user: int
+    user: str
         User id which gave the feedback
 
     Returns
