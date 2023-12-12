@@ -105,7 +105,8 @@
 
             function getMore(){
                 fetch("https://wikitok.onrender.com/predict?" + new URLSearchParams({
-                    usr: username
+                    usr: username,
+                    q:5
                 }))
                 .then(response => {
                     if (!response.ok) {
