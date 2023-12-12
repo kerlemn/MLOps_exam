@@ -6,7 +6,7 @@ The databased is stored in a csv file with the following columns:
 
 Useful methods:
 - add_page: add a page to the database
-- save: save database to file
+- save: save database to csv file
 
 """
 import pandas as pd
@@ -18,15 +18,21 @@ class UserDatabase:
     COLUMNS = ['TITLE', 'SCORE']
     ALLOWED_SCORES = (0, 1)
 
-    def __init__(self, path='data\\user_database.csv'):
+    def __init__(self, path):
         self.path = path
         self.data = pd.DataFrame(columns=UserDatabase.COLUMNS)
         self._load()
+
+    def _health_check(self):
+        """ check if there are duplicate titles """
+        if len(self.data) != len(self.data.TITLE.unique()):
+            raise ValueError('Invalid database, duplicate titles found!')
 
     def _load(self):
         """ load database from file """
         if os.path.exists(self.path):
             self.data = pd.read_csv(self.path)
+            self._health_check()
         else:
             # create directory if it doesn't exist
             dir_path = os.path.dirname(self.path)
