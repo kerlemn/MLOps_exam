@@ -1,4 +1,4 @@
-from predictor import add_feedback, get_page, get_URLs, predict
+from predictor import add_feedback, get_page, get_URLs, get_best_coefficients
 import loader
 
 """
@@ -7,7 +7,7 @@ import loader
 #####################
 """
 if __name__ == '__main__':
-    user = 2
+    user = ""
 
     """
     ##########################################
@@ -18,8 +18,6 @@ if __name__ == '__main__':
     # pages = loader.get_random_pages(100)
     # df = pd.DataFrame(np.array([pages["TITLE"].values, [np.random.randint(0,2) for _ in range(100)]]).T, columns=["TITLE", "SCORE"])
     # df.to_csv(f"{__path__}/datasets/user{user}.csv", index=False)
-
-
 
     """
     ####################################################################
@@ -36,11 +34,11 @@ if __name__ == '__main__':
     ### Test for the predict and the score of a suggested page ###
     ##############################################################
     """
-    suggested_pages = get_page(user=user, n=5, best=True)
-    for suggested in suggested_pages:
-        print(suggested["url"])
-        score = input("Rate the page (0: dislike, 1: like): ")
-        add_feedback(user, suggested["title"], int(score))
+    # suggested_pages = get_page(user=user, n=5, best=True)
+    # for suggested in suggested_pages:
+    #     print(suggested["url"])
+    #     score = input("Rate the page (0: dislike, 1: like): ")
+    #     add_feedback(user, suggested["title"], int(score))
 
 
     """

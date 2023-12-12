@@ -139,6 +139,26 @@ def get_training_data(user:str):
 
     return X, y
 
+
+def get_columns():
+    """
+    Function to get the training data for the specified user.
+
+    Returns
+    -------
+    columns: list
+        List of the features of the pages
+    """
+    wiki_database = WikiDatabase(f'{__path__}/data_engineering/data/wiki_database')
+
+    tmp  = wiki_database.get_random_pages(1)
+    page = wiki_database.get_training_data(tmp)
+
+    page.drop("TITLE", axis=1, inplace=True)
+    columns = page.columns.values
+
+    return columns
+
 def get_rated_pages(user:str):
     """
     Function to get the title of the pages rated from the user.

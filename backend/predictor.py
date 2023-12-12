@@ -80,6 +80,36 @@ def predict(user:str, n:int, best=True) -> np.array:
 
     return reccomended_page
 
+def get_best_coefficients(coef:list, n:int=10):
+    """
+    Function to get the best coefficients for the model.
+
+    Parameters
+    ----------
+    coef: list
+        List of the coefficients
+
+    Returns
+    -------
+    best_coefficients: list
+        List of the best coefficients
+    """
+    # Get the index of the best coefficients
+    best_coefficients_idx = np.argsort(np.abs(coef))
+    columns_name          = loader.get_columns()
+
+    # Get the best coefficients
+    best_coefficients     = coef[best_coefficients_idx]
+    best_names            = columns_name[best_coefficients_idx]
+
+    # Get the best n coefficients
+    best_coefficients     = best_coefficients[-n:]
+    best_names            = best_names[-n:]
+
+    coefficients = {name: coefficient for name, coefficient in zip(best_names, best_coefficients)}
+
+    return coefficients
+
 def train(user:str):
     """
     Function to train a new model for the given user id based on its preferences and save it in a pickle file.
@@ -110,17 +140,13 @@ def train(user:str):
 
     run["user"] = user
     run["parameters"] = clf.get_params()
-    run["coefficients"] = clf.coef_
+    run["coefficients"] = get_best_coefficients(clf.coef_[0])
     run["intercept"] = clf.intercept_
     run["rows"] = len(y)
 
     run.stop()
 
-<<<<<<< HEAD
 def get_page(user:str, n=1, best=True) -> list:
-=======
-def get_page(user:str) -> str:
->>>>>>> a98cf18fcf0211a0b64830ef1efb695e72556c8b
     """
     Function to get the Wikipedia page predicting it for the specified user.
 
