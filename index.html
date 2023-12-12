@@ -143,6 +143,7 @@
                     actual = 0;
                 }
                 showPage();
+                if(pages.length-actual==4) getMore()
                 return { title: currentPage.title, preference: undefined };
             }
 
