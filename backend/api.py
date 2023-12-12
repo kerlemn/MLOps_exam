@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent
 
 class Pref(BaseModel):
     title: str
-    score: str
+    score: int
     user: str
 
 @app.get("/")

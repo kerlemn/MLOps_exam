@@ -172,7 +172,7 @@ def get_page(user:str, n=1, best=True) -> list:
 
     return suggested
 
-def add_feedback(user:str, title_page: str, score: str):
+def add_feedback(user:str, title_page: str, score: int):
     """
     Function to add a feedback about a page to the user's feedback .csv file.
 
