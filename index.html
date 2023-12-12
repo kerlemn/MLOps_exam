@@ -108,15 +108,9 @@
                     usr: username,
                     q:5
                 }))
-                .then(response => {
-                    if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                    }
-                })
-                .then(data => {
-                    const obj = JSON.parse(data);
-                    pages.concat(obj);
-                });
+                .then(response => response.json())
+                .then(json => pages=pages.concat(json.Pages))
+                .catch(err => console.log('Request Failed', err));
             }
 
             function savePreference(preference) {
@@ -129,7 +123,7 @@
                     },
                     body: JSON.stringify({
                         title: pages[actual].title,
-                        preference: preference,
+                        score: preference,
                         user: username // Change this field to the current user or user ID
                     })
                 })

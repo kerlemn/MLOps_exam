@@ -44,5 +44,5 @@ def pre(usr: str, q:int):
 
 @app.post('/save_data')
 def save_data(preference: Pref):
-    print("Saving preference :"+ preference)
+    print("Saving preference from :"+ preference.user)
     add_feedback(preference.user, preference.title, preference.score)
