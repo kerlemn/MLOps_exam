@@ -1,8 +1,0 @@
-fastapi>=0.68.0,<0.69.0
-uvicorn>=0.15.0,<0.16.0
-pandas>=2.1.2
-numpy>=1.26.1
-scikit-learn==1.2.0
-neptune>=1.8.5
-fastparquet
-pyarrow
