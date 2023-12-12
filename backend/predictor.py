@@ -172,21 +172,6 @@ def get_page(user:str, n=1, best=True) -> list:
 
     return suggested
 
-def get_pages(user:str) -> str:
-    """
-    Function to get the Wikipedia page predicting it for the specified user.
-
-    Parameters
-    ----------
-    user: id
-        User id which gave the feedback
-    """
-
-    page_info = predict(user=user)
-    page = page_info[0]
-    page_ = page.replace(' ', '_')
-    return [{"url": f"https://en.wikipedia.org/wiki/{page_}", "title": page}]
-
 def add_feedback(user:str, title_page: str, score: str):
     """
     Function to add a feedback about a page to the user's feedback .csv file.

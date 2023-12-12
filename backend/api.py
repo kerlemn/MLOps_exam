@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from predictor import get_pages, add_feedback
+from predictor import get_page, add_feedback
 from pydantic import BaseModel
 from json import dumps
 import re
@@ -40,7 +40,7 @@ def read_root():
 @app.get("/predict")
 def pre(usr: str):
     print("Requesting pages from :"+ usr)
-    return dumps(get_pages(usr))
+    return dumps(get_page(usr))
 
 @app.post('/save_data')
 def save_data(preference: Pref):
