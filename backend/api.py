@@ -40,7 +40,7 @@ def read_root():
 @app.get("/predict")
 def pre(usr: str):
     print("Requesting pages from :"+ usr)
-    return {"Pages":dumps(get_pages(usr))}
+    return dumps(get_pages(usr))
 
 @app.post('/save_data')
 def save_data(preference: Pref):
