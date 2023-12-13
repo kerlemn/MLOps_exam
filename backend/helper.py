@@ -137,7 +137,7 @@ def get_training_data(user:str):
     if feedback_title.duplicated().any():
         titles = feedback_title[feedback_title.duplicated()]
         idxs   = [feedback_title[feedback_title == title].index[0] for title in titles]
-    feedback_df = feedback_df.drop(idxs)
+    	feedback_df = feedback_df.drop(idxs)
 
     # Get the pages information
     rated_titles   = feedback_df["TITLE"].values
@@ -148,7 +148,6 @@ def get_training_data(user:str):
     y = feedback_df["SCORE"].values
 
     return X, y
-
 
 def get_columns():
     """
