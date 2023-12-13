@@ -63,20 +63,25 @@
     <div id="wikipediaLogo">
         <img src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia Logo" width="250">
     </div>
-
         <script>
             var actual = 0;
-            var pages = [
-                { url: "https://en.wikipedia.org/wiki/Galaxy", title: "Galaxy" },
-                { url: "https://en.wikipedia.org/wiki/Modbus", title: "Modbus" }
-            ];
+            var pages = [];
             var username = "";
             document.addEventListener('DOMContentLoaded', function() {
                 showPage();
             }, false);
 
             function showPage() {
-                document.getElementById("subpage").setAttribute("src", pages[actual].url);
+                if(pages.length<=actual){
+                    document.getElementById("subpage").setAttribute("srcdoc",  '<h1>Loading...</h1>' );
+                    document.getElementById("like").setAttribute("disabled", true);
+                    document.getElementById("dislike").setAttribute("disabled", true);
+                }else{
+                    document.getElementById("subpage").removeAttribute("srcdoc");
+                    document.getElementById("subpage").setAttribute("src", pages[actual].url);
+                    document.getElementById("like").removeAttribute("disabled");
+                    document.getElementById("dislike").removeAttribute("disabled");
+                }
             }
 
             function like() {
@@ -109,7 +114,13 @@
                     q:5
                 }))
                 .then(response => response.json())
-                .then(json => pages=pages.concat(json.Pages))
+                .then(json => {
+                    if(pages.length<=actual){
+                        pages=pages.concat(json.Pages);
+                        showPage();
+                    }
+                    else pages=pages.concat(json.Pages);
+                })
                 .catch(err => console.log('Request Failed', err));
             }
 
@@ -137,14 +148,9 @@
             }
 
             function next() {
-                var currentPage = pages[actual];
                 actual++;
-                if (actual >= pages.length) {
-                    actual = 0;
-                }
                 showPage();
                 if(pages.length-actual==4) getMore()
-                return { title: currentPage.title, preference: undefined };
             }
 
             function previous() {
@@ -162,8 +168,8 @@
             <!-- Pulsanti per previous, like e dislike -->
             <div id="buttonsContainer">
                 <button class="previous" onclick="previous()">←</button>
-                <button class="like" onclick="dislike()">Dislike👎</button>
-                <button class="dislike" onclick="like()">Like👍</button>
+                <button id="like" class="like" onclick="dislike()">Dislike👎</button>
+                <button id="dislike" class="dislike" onclick="like()">Like👍</button>
             </div>
         </div>
 </body>
