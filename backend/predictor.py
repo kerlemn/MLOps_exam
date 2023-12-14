@@ -22,9 +22,9 @@ __k__               = 10
 # Number of feed for each user to trigger the re-train
 __newfeed__         = 10 
 # # Neptune project name
-# __neptune_project__ = str(os.getenv('NEPTUNE_PROJECT'))
+__neptune_project__ = os.getenv('NEPTUNE_PROJECT').replace("\r", "")
 # # Token for neptune.ai
-# __neptune_token__   = str(os.getenv('NEPTUNE_TOKEN'))
+__neptune_token__   = os.getenv('NEPTUNE_API_TOKEN').replace("\r", "")
 
 """
 #############################
@@ -104,8 +104,8 @@ def train(user:str):
 
     # Save the user's feedback related to the page suggested on neptune to monitorate the prediction correctness
     run = neptune.init_run(
-        project  ="WikiTok/WikiTok"#__neptune_project__,
-        # api_token=__neptune_token__,
+        project   = __neptune_project__,
+        api_token = __neptune_token__,
     )
 
     run["user"] = user

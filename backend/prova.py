@@ -28,11 +28,11 @@ supabase: Client = create_client(url, key)
 #                    .execute()
 
 
-# response = supabase.table('Preferences') \
-#                    .select('*') \
-#                    .eq('User', "") \
-#                    .execute()
-# print(response.data)
+response = supabase.table('Preferences') \
+                   .select('*') \
+                   .eq('User', "5") \
+                   .execute()
+print(response.data)
 
 # clf = load_model("")
 
@@ -44,7 +44,7 @@ supabase: Client = create_client(url, key)
 
 response = supabase.table('Model') \
                    .select('*') \
-                   .eq('user', "") \
+                   .eq('user', "5") \
                    .execute() \
                    .data
 

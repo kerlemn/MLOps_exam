@@ -9,10 +9,13 @@ from pathlib import Path
 import os
 
 __path__ = Path(__file__).parent
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
 
-supabase: Client = create_client(url, key)
+# Open the database
+__url__: str = os.environ.get("SUPABASE_URL").replace("\r", "")
+__key__: str = os.environ.get("SUPABASE_KEY").replace("\r", "")
+
+__supabase__: Client = create_client(__url__, __key__)
+
 
 def load_user_feedback(user:str) -> pd.DataFrame:
     """
@@ -30,7 +33,7 @@ def load_user_feedback(user:str) -> pd.DataFrame:
     """
     # user_database = UserDatabase(f"{__path__}/data_engineering/data/user{user}.csv")
     # Get the number of feedbacks given by the user
-    response = supabase.table('Preferences') \
+    response = __supabase__.table('Preferences') \
                        .select('*') \
                        .eq('User', user) \
                        .execute() \
@@ -60,14 +63,9 @@ def add_feedback(user:str, title:str, score:bool):
     -------
     n: int
         Number of feedbacks given by the user
-    """
-    # user_database = UserDatabase(f"{__path__}/data_engineering/data/user{user}.csv")
-    # user_database.add_page(title, score)
-    # user_database.save()
-
-    
+    """    
     # Check if the User exists
-    response = supabase.table('Users') \
+    response = __supabase__.table('Users') \
                        .select('*') \
                        .eq('id', user) \
                        .execute() \
@@ -75,25 +73,25 @@ def add_feedback(user:str, title:str, score:bool):
     
     # If not, create it
     if len(response) == 0:
-        response = supabase.table('Users') \
+        response = __supabase__.table('Users') \
                            .insert({"id": user}) \
                            .execute()
 
     try:
         # Save the preference into the database
-        response = supabase.table('Preferences') \
+        response = __supabase__.table('Preferences') \
                            .insert({"Title": title, "User": user, "Like": score}) \
                            .execute()
     except:
         # If already in the dataset, substitute the previous preference
-        response = supabase.table('Preferences') \
+        response = __supabase__.table('Preferences') \
                            .update({"Title": title, "User": user, "Like": score}) \
                            .eq('Title', title) \
                            .eq('User', user) \
                            .execute()
     
     # Get the number of feedbacks given by the user
-    response = supabase.table('Preferences') \
+    response = __supabase__.table('Preferences') \
                        .select('*') \
                        .eq('User', user) \
                        .execute() \
@@ -117,7 +115,7 @@ def load_model(user:str):
     model:
         Scikit-Learn model
     """
-    response = supabase.table('Model') \
+    response = __supabase__.table('Model') \
                        .select('*') \
                        .eq('user', user) \
                        .execute() \
@@ -147,7 +145,7 @@ def save_model(user:str, model):
 
     string = pkl.dumps(model).hex()
 
-    response = supabase.table('Model') \
+    response = __supabase__.table('Model') \
                        .select('*') \
                        .eq('user', user) \
                        .execute() \
@@ -155,12 +153,12 @@ def save_model(user:str, model):
 
     # If the user has no model, return None
     if len(response) == 0:
-        supabase.table('Model') \
+        __supabase__.table('Model') \
                 .insert({"user": user, "hex": string}) \
                 .execute()
     # Otherwise, update the model
     else:
-        supabase.table('Model') \
+        __supabase__.table('Model') \
                 .update({"user": user, "hex": string}) \
                 .eq('user', user) \
                 .execute()
