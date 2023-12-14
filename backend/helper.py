@@ -3,11 +3,16 @@ import pandas as pd
 import numpy  as np
 
 from data_engineering.wiki_database import WikiDatabase
-from data_engineering.user_database import UserDatabase
+from supabase import create_client, Client
 
 from pathlib import Path
+import os
 
 __path__ = Path(__file__).parent
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+
+supabase: Client = create_client(url, key)
 
 def load_user_feedback(user:str) -> pd.DataFrame:
     """
@@ -23,11 +28,22 @@ def load_user_feedback(user:str) -> pd.DataFrame:
     pd.Dataframe
         Pandas Dataframe containing the information about the feedback of the specified user.
     """
-    user_database = UserDatabase(f"{__path__}/data_engineering/data/user{user}.csv")
+    # user_database = UserDatabase(f"{__path__}/data_engineering/data/user{user}.csv")
+    # Get the number of feedbacks given by the user
+    response = supabase.table('Preferences') \
+                       .select('*') \
+                       .eq('User', user) \
+                       .execute() \
+                       .data
+    
+    titles = [row["Title"] for row in response]
+    score  = [row["Like"] for row in response]
 
-    return user_database.data
+    user_database = pd.DataFrame(np.array([titles, score]).T, columns=["TITLE", "SCORE"])
 
-def add_feedback(user:str, title:str, score:int):
+    return user_database
+
+def add_feedback(user:str, title:str, score:bool):
     """
     Function to add a feedback to the user's feedback.
 
@@ -45,11 +61,45 @@ def add_feedback(user:str, title:str, score:int):
     n: int
         Number of feedbacks given by the user
     """
-    user_database = UserDatabase(f"{__path__}/data_engineering/data/user{user}.csv")
-    user_database.add_page(title, score)
-    user_database.save()
+    # user_database = UserDatabase(f"{__path__}/data_engineering/data/user{user}.csv")
+    # user_database.add_page(title, score)
+    # user_database.save()
 
-    n = len(user_database.data)
+    
+    # Check if the User exists
+    response = supabase.table('Users') \
+                       .select('*') \
+                       .eq('id', user) \
+                       .execute() \
+                       .data
+    
+    # If not, create it
+    if len(response) == 0:
+        response = supabase.table('Users') \
+                           .insert({"id": user}) \
+                           .execute()
+
+    try:
+        # Save the preference into the database
+        response = supabase.table('Preferences') \
+                           .insert({"Title": title, "User": user, "Like": score}) \
+                           .execute()
+    except:
+        # If already in the dataset, substitute the previous preference
+        response = supabase.table('Preferences') \
+                           .update({"Title": title, "User": user, "Like": score}) \
+                           .eq('Title', title) \
+                           .eq('User', user) \
+                           .execute()
+    
+    # Get the number of feedbacks given by the user
+    response = supabase.table('Preferences') \
+                       .select('*') \
+                       .eq('User', user) \
+                       .execute() \
+                       .data
+    
+    n = len(response)
 
     return n
 
@@ -67,12 +117,19 @@ def load_model(user:str):
     model:
         Scikit-Learn model
     """
+    response = supabase.table('Model') \
+                       .select('*') \
+                       .eq('user', user) \
+                       .execute() \
+                       .data
 
-    try:
-        with open(f"{__path__}/models/model{user}.pkl", "rb") as f:
-            model = pkl.load(f)
-    except:
-        model = None
+    # If the user has no model, return None
+    if len(response) == 0:
+        return None
+    
+    # Load the model
+    string = bytes.fromhex(response[0]["hex"])
+    model = pkl.loads(string)
     
     return model
     
@@ -88,8 +145,26 @@ def save_model(user:str, model):
         Scikit-Learn model to save
     """
 
-    with open(f"{__path__}/models/model{user}.pkl", "wb") as f:
-        pkl.dump(model, f)
+    string = pkl.dumps(model).hex()
+
+    response = supabase.table('Model') \
+                       .select('*') \
+                       .eq('user', user) \
+                       .execute() \
+                       .data
+
+    # If the user has no model, return None
+    if len(response) == 0:
+        supabase.table('Model') \
+                .insert({"user": user, "hex": string}) \
+                .execute()
+    # Otherwise, update the model
+    else:
+        supabase.table('Model') \
+                .update({"user": user, "hex": string}) \
+                .eq('user', user) \
+                .execute()
+
 
 def get_random_pages(n = 10) -> pd.DataFrame:
     """
@@ -137,7 +212,7 @@ def get_training_data(user:str):
     if feedback_title.duplicated().any():
         titles = feedback_title[feedback_title.duplicated()]
         idxs   = [feedback_title[feedback_title == title].index[0] for title in titles]
-    	feedback_df = feedback_df.drop(idxs)
+        feedback_df = feedback_df.drop(idxs)
 
     # Get the pages information
     rated_titles   = feedback_df["TITLE"].values
@@ -149,7 +224,8 @@ def get_training_data(user:str):
 
     return X, y
 
-def get_columns():
+
+def get_columns_name():
     """
     Function to get the training data for the specified user.
 
@@ -203,7 +279,7 @@ def get_best_coefficients(coef:list, n:int=10):
     """
     # Get the index of the best coefficients
     best_coefficients_idx = np.argsort(np.abs(coef))
-    columns_name          = get_columns()
+    columns_name          = get_columns_name()
 
     # Get the best coefficients
     best_coefficients     = coef[best_coefficients_idx]

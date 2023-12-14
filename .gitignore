@@ -1,3 +1,4 @@
 .gitignore
 run_predictor.sh
-__pycache__/*
+run_prova.sh
+*/__pycache__/*
