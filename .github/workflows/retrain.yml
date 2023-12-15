@@ -28,6 +28,8 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
     - name: Retrain the Models
+      env: 
+        NEPTUNE_PROJECT: ${{vars.NEPTUNE_PROJECT}}
       run: 
-        echo "$vars.NEPTUNE_PROJECT";
+        echo "$NEPTUNE_PROJECT";
         # python backend/retrain.py
