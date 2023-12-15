@@ -77,17 +77,9 @@ def add_feedback(user:str, title:str, score:bool):
                            .insert({"id": user}) \
                            .execute()
 
-    try:
-        # Save the preference into the database
-        response = __supabase__.table('Preferences') \
-                           .insert({"Title": title, "User": user, "Like": score}) \
-                           .execute()
-    except:
-        # If already in the dataset, substitute the previous preference
-        response = __supabase__.table('Preferences') \
-                           .update({"Title": title, "User": user, "Like": score}) \
-                           .eq('Title', title) \
-                           .eq('User', user) \
+    # Save the preference into the database
+    response = __supabase__.table('Preferences') \
+                           .upsert({"Title": title, "User": user, "Like": score}) \
                            .execute()
     
     # Get the number of feedbacks given by the user
@@ -145,22 +137,9 @@ def save_model(user:str, model):
 
     string = pkl.dumps(model).hex()
 
-    response = __supabase__.table('Model') \
-                       .select('*') \
-                       .eq('user', user) \
-                       .execute() \
-                       .data
-
     # If the user has no model, return None
-    if len(response) == 0:
-        __supabase__.table('Model') \
-                .insert({"user": user, "hex": string}) \
-                .execute()
-    # Otherwise, update the model
-    else:
-        __supabase__.table('Model') \
-                .update({"user": user, "hex": string}) \
-                .eq('user', user) \
+    __supabase__.table('Model') \
+                .upsert({"user": user, "hex": string}) \
                 .execute()
 
 
