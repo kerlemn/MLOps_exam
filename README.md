@@ -16,15 +16,17 @@
 - create wiki BoW dataset 
 - method to update BoW
 
-### User data (Omar, Stefano)
-- method to create new user
-- method to add user preferences and create sample user dataset
-- method to make recommendation 
+### User data (Stefano)
+- Method to create new user
+- Method to add user preferences and create sample user dataset
+- Method to make recommendation
+- Interface to database
 
-### Model (Stefano, Omar)
-- create a SVM on sample user data
-- make recommendation system 
-- try with other architectures
+### Model (Stefano)
+- ~Create a SVM on sample user data~
+  - Try with other architectures
+  - Create a Logistic Regression for each user 
+- Make recommendation system 
 
 ### User Interface (Andrea, Alessio)
 - basic browser UI
