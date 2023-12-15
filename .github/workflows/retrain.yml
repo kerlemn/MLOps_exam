@@ -34,8 +34,4 @@ jobs:
         NEPTUNE_API_TOKEN: ${{secrets.NEPTUNE_API_TOKEN}}
         SUPABASE_KEY: ${{secrets.SUPABASE_KEY}}
       run: 
-        echo "$NEPTUNE_PROJECT";
-        echo "$SUPABASE_URL";
-        echo "$NEPTUNE_API_TOKEN";
-        echo "$SUPABASE_KEY";
-        # python backend/retrain.py
+        python backend/retrain.py
