@@ -29,5 +29,4 @@ jobs:
         if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
     - name: Retrain the Models
       run: 
-        echo "$NEPTUNE_PROJECT"
         python backend/retrain.py
