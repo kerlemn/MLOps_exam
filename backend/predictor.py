@@ -133,10 +133,14 @@ def get_page(user:str, n=1, best=True) -> list:
         List of dictionary containing the url and the title of the pages
     """
 
+    # Get the prediction for the user specified
     pages_info = predict(user=user, n=n, best=best)
+
+    # Get the URL of the pages
     pages      = pages_info[:, 0]
     urls       = [url.replace(' ', '_') for url in pages]
 
+    # Create the list of the suggested pages conform to the frontend
     suggested  =  [{"url": f"https://en.wikipedia.org/wiki/{url}", "title": page} 
                    for url, page in zip(urls, pages)]
 

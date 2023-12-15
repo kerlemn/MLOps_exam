@@ -31,7 +31,6 @@ def load_user_feedback(user:str) -> pd.DataFrame:
     pd.Dataframe
         Pandas Dataframe containing the information about the feedback of the specified user.
     """
-    # user_database = UserDatabase(f"{__path__}/data_engineering/data/user{user}.csv")
     # Get the number of feedbacks given by the user
     response = __supabase__.table('Preferences') \
                        .select('*') \
@@ -39,9 +38,11 @@ def load_user_feedback(user:str) -> pd.DataFrame:
                        .execute() \
                        .data
     
+    # Obtain the titles and the scores of the pages
     titles = [row["Title"] for row in response]
     score  = [row["Like"] for row in response]
 
+    # Create the dataframe of the feedbacks
     user_database = pd.DataFrame(np.array([titles, score]).T, columns=["TITLE", "SCORE"])
 
     return user_database
@@ -107,6 +108,7 @@ def load_model(user:str):
     model:
         Scikit-Learn model
     """
+    # Get the user model
     response = __supabase__.table('Model') \
                        .select('*') \
                        .eq('user', user) \
@@ -117,7 +119,7 @@ def load_model(user:str):
     if len(response) == 0:
         return None
     
-    # Load the model
+    # Load the model converting from hex to bytes
     string = bytes.fromhex(response[0]["hex"])
     model = pkl.loads(string)
     
@@ -135,9 +137,10 @@ def save_model(user:str, model):
         Scikit-Learn model to save
     """
 
+    # Convert the model to bytes and then to hex
     string = pkl.dumps(model).hex()
 
-    # If the user has no model, return None
+    # Insert the model into the database
     __supabase__.table('Model') \
                 .upsert({"user": user, "hex": string}) \
                 .execute()
