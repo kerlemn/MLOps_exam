@@ -159,7 +159,9 @@ def get_random_pages(n = 10) -> pd.DataFrame:
     """
     wiki_database = WikiDatabase(f'{__path__}/data_engineering/data/wiki_database')
 
+    # Get random titles of pages
     titles = wiki_database.get_random_pages(n)
+    # Get random pages from the database
     pages  = wiki_database.get_training_data(titles)
 
     return pages
@@ -213,31 +215,15 @@ def get_columns_name():
     """
     wiki_database = WikiDatabase(f'{__path__}/data_engineering/data/wiki_database')
 
+    # Get a random page to access to the columns of the pages
     tmp  = wiki_database.get_random_pages(1)
     page = wiki_database.get_training_data(tmp)
 
+    # Get the columns names
     page.drop("TITLE", axis=1, inplace=True)
     columns = page.columns.values
 
     return columns
-
-def get_rated_pages(user:str):
-    """
-    Function to get the title of the pages rated from the user.
-    
-    Parameters
-    ----------
-    user: str
-        User id which gave the feedback
-
-    Returns
-    -------
-    titles: pd.DataFrame
-        Dataframe of the pages rated from the user
-    """
-    feedback_df   = load_user_feedback(user)
-
-    return feedback_df
 
 def get_best_coefficients(coef:list, n:int=10):
     """

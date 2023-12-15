@@ -191,7 +191,7 @@ def get_URLs(user:str) -> np.array:
         Array of the URL of the user's rated pages
     """
     # Get the titles rated by the user
-    pages_df = helper.get_rated_pages(user)
+    pages_df = helper.load_user_feedback(user)
 
     # Get the titles of the pages
     titles   = pages_df["TITLE"].values
@@ -215,10 +215,10 @@ def get_URLs_liked(user:str) -> np.array:
         Array of the URL of the user's liked pages
     """
     # Get the titles rated by the user
-    pages_df = helper.get_rated_pages(user)
+    pages_df = helper.load_user_feedback(user)
     
     # Get the titles of the pages liked by the user
-    titles   = pages_df["TITLE"][pages["SCORE"] == "True"].values
+    titles   = pages_df["TITLE"][pages_df["SCORE"] == "True"].values
 
     # Get the URL of the pages
     pages    = [{ "url": f"https://en.wikipedia.org/wiki/{title}", "title": title } for title in titles]
