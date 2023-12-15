@@ -232,13 +232,12 @@ def get_rated_pages(user:str):
 
     Returns
     -------
-    titles: list
-        Array of the titles of the pages
+    titles: pd.DataFrame
+        Dataframe of the pages rated from the user
     """
     feedback_df   = load_user_feedback(user)
 
-    titles = feedback_df["TITLE"].values
-    return titles
+    return feedback_df
 
 def get_best_coefficients(coef:list, n:int=10):
     """

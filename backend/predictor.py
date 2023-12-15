@@ -191,7 +191,35 @@ def get_URLs(user:str) -> np.array:
         Array of the URL of the user's rated pages
     """
     # Get the titles rated by the user
-    titles = helper.get_rated_pages(user)
+    pages_df = helper.get_rated_pages(user)
 
-    pages = [{ "url": f"https://en.wikipedia.org/wiki/{title}", "title": title } for title in titles]
+    # Get the titles of the pages
+    titles   = pages_df["TITLE"].values
+
+    # Get the URL of the pages
+    pages    = [{ "url": f"https://en.wikipedia.org/wiki/{title}", "title": title } for title in titles]
+    return pages
+
+def get_URLs_liked(user:str) -> np.array:
+    """
+    Function to get the pages liked by the user.
+
+    Parameters
+    ----------
+    user: id
+        User id which gave the feedback
+
+    Returns
+    -------
+    pages: np.array
+        Array of the URL of the user's liked pages
+    """
+    # Get the titles rated by the user
+    pages_df = helper.get_rated_pages(user)
+    
+    # Get the titles of the pages liked by the user
+    titles   = pages_df["TITLE"][pages["SCORE"] == "True"].values
+
+    # Get the URL of the pages
+    pages    = [{ "url": f"https://en.wikipedia.org/wiki/{title}", "title": title } for title in titles]
     return pages
