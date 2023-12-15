@@ -108,11 +108,19 @@ def train(user:str):
         api_token = __neptune_token__,
     )
 
-    run["user"] = user
-    run["parameters"] = clf.get_params()
-    run["coefficients"] = helper.get_best_coefficients(clf.coef_[0])
-    run["intercept"] = clf.intercept_
-    run["rows"] = len(y)
+    names, coef  = helper.get_best_coefficients(clf.coef_[0])
+
+    # Weight the feedback by the timestamp
+    ordered_feed = get_ordered_feedback(user)
+    weighted_feed = [score * np.exp(-i/10) for i, score in enumerate(ordered_feed)]
+
+    run["user"]         = user
+    run["parameters"]   = clf.get_params()
+    run["coefficients"] = names
+    run["coefficients"] = coef
+    run["intercept"]    = clf.intercept_
+    run["rows"]         = len(y)
+    run["likes"]        = np.mean(weighted_feed)
 
     run.stop()
 
@@ -159,18 +167,6 @@ def add_feedback(user:str, title_page: str, score: int):
     score: bool
         Score given to the page (0: dislike, 1:like)
     """
-    # # Save the user's feedback related to the page suggested on neptune to monitorate the prediction correctness
-    # run = neptune.init_run(
-    #     project  ="WikiTok/WikiTok"#__neptune_project__,
-    #     # api_token=__neptune_token__,
-    # )
-
-    # run["user"] = user
-    # run["predicted"] = title_page
-    # run["score"] = score
-
-    # run.stop()
-
     # Add the feedback to the user's feedback .csv file
     # And obtain the number of feedbacks given by the user
     n = helper.add_feedback(user, title_page, score)
@@ -179,6 +175,28 @@ def add_feedback(user:str, title_page: str, score: int):
     if n % __newfeed__ == 0:
         print(f"{n} feedback: Retrain model for user {user}")
         train(user)
+
+def get_ordered_feedback(user:str) -> np.array:
+    """
+    Function to get the feedback of the user ordered by the timestamp.
+
+    Parameters
+    ----------
+    user: id
+        User id which gave the feedback
+
+    Returns
+    -------
+    feedback: np.array
+        Array of the feedback of the user ordered by the timestemp
+    """
+    # Get the feedback of the user
+    feedback_df = helper.load_user_feedback(user)
+
+    # Get the sorted feedback
+    feedback = feedback_df.sort_values(by="TIMES", ascending=False)["SCORE"]
+
+    return feedback.values.astype(bool)
 
 def get_URLs(user:str) -> np.array:
     """

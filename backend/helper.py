@@ -40,10 +40,11 @@ def load_user_feedback(user:str) -> pd.DataFrame:
     
     # Obtain the titles and the scores of the pages
     titles = [row["Title"] for row in response]
-    score  = [row["Like"] for row in response]
+    scores = [row["Like"] for row in response]
+    times  = [row["TimeStamp"] for row in response]
 
     # Create the dataframe of the feedbacks
-    user_database = pd.DataFrame(np.array([titles, score]).T, columns=["TITLE", "SCORE"])
+    user_database = pd.DataFrame(np.array([titles, scores, times]).T, columns=["TITLE", "SCORE", "TIMES"])
 
     return user_database
 
@@ -251,9 +252,10 @@ def get_best_coefficients(coef:list, n:int=10):
     best_names            = columns_name[best_coefficients_idx]
 
     # Get the best n coefficients
-    best_coefficients     = best_coefficients[-n:]
-    best_names            = best_names[-n:]
+    best_coefficients     = best_coefficients[-n:][::-1]
+    best_names            = best_names[-n:][::-1]
 
-    coefficients = {name: coefficient for name, coefficient in zip(best_names, best_coefficients)}
+    coefficients_names  = {f"best_{i+1}_name": name for i, name in enumerate(best_names)}
+    coefficients_values = {f"best_{i+1}_value": val for i, val in enumerate(best_coefficients)}
 
-    return coefficients
+    return coefficients_names, coefficients_values

@@ -1,4 +1,4 @@
-from predictor import get_page, add_feedback, get_URLs, get_URLs_liked
+from predictor import get_page, add_feedback, get_URLs, get_URLs_liked, train
 import helper
 
 """
@@ -7,7 +7,9 @@ import helper
 #####################
 """
 if __name__ == '__main__':
-    user = "Stefano"
+    user = "10"
+
+    train(user)
 
     """
     ##########################################
