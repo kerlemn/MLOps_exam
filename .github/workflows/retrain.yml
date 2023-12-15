@@ -30,4 +30,4 @@ jobs:
     - name: Retrain the Models
       run: 
         echo "$NEPTUNE_PROJECT";
-        python backend/retrain.py
+        # python backend/retrain.py
