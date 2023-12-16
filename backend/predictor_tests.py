@@ -59,3 +59,30 @@ if __name__ == '__main__':
     # URLs = get_URLs_liked(user)
     # print(URLs)
     # print((len(URLs)))
+
+    """
+    #########################
+    ### Delete all models ###
+    #########################
+    """
+
+    # response = __supabase__.table('Model') \
+    #                     .select("user") \
+    #                     .execute() \
+    #                     .data
+    
+    # users = [row["user"] for row in response]
+    # print(users)
+
+    # for user in users:
+    #     data = __supabase__.table('Model') \
+    #                     .delete() \
+    #                     .eq('user', user) \
+    #                     .execute()
+    
+    # response = __supabase__.table('Model') \
+    #                    .select("user") \
+    #                    .execute() \
+    #                    .data
+
+    # print(response) 
