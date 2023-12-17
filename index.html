@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WikiTok</title>
     <style>
+        #pageNumberNote {
+            display: none;
+          }
 
         @media only screen and (max-width: 600px) {
             #wikipediaLogo {
@@ -91,6 +94,7 @@
     </div>
         <script>
             var actual = 0;
+            var last_seen = 0;
             var pages = [];
             var username = "";
             document.addEventListener('DOMContentLoaded', function() {
@@ -102,6 +106,7 @@
                     document.getElementById("subpage").setAttribute("srcdoc",  '<h1>Waiting for the free server that hosts the API to grace us with his attention...</h1>' );
                     document.getElementById("like").setAttribute("disabled", true);
                     document.getElementById("dislike").setAttribute("disabled", true);
+                    document.getElementById('currentPageNumber').innerHTML = (actual+1) + "/" + (last_seen+1);
                 }else{
                     document.getElementById("subpage").removeAttribute("srcdoc");
                     document.getElementById("subpage").setAttribute("src", pages[actual].url);
@@ -128,6 +133,7 @@
                     document.getElementById("content").style.display = "block";
                     document.getElementById("wikipediaLogo").style.display = "none"; // Nasconde il logo di Wikipedia
                     // You can perform actions here after submitting the username, like showing the main screen
+                    document.getElementById("pageNumberNote").style.display = "block"; // Mostra la nota del numero di pagina
                     getMore();
                 } else {
                     document.getElementById("error").style.display = "block";
@@ -175,19 +181,43 @@
 
             function next() {
                 actual++;
-                showPage();
+                last_seen++;
                 if(pages.length-actual==4) getMore()
+                updatePageNumber();
+                showPage();
+            }
+
+            function goToNextSeen() {;
+                if(actual == last_seen) console.error('You have to rate the page before going to the next one!');
+                else if(actual<last_seen) actual++;
+                updatePageNumber();
+                showPage();
             }
 
             function previous() {
-                actual--;
+                actual--
                 if (actual < 0) {
                     actual = pages.length - 1;
                 }
+                updatePageNumber();
                 showPage();
             }
+
+            function goToLastSeen() {
+                actual = last_seen;
+                updatePageNumber();
+                showPage();
+            }
+
+            function updatePageNumber() {
+                // Aggiorna il numero della pagina corrente nella nota in basso a destra
+                document.getElementById('currentPageNumber').innerHTML = (actual+1) + "/" + (last_seen+1);
+            }
+
         </script>
-    
+        <div id="pageNumberNote" style="position: fixed; bottom: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.5); color: white; padding: 5px 10px; border-radius: 5px;">
+            Page: <span id="currentPageNumber">1</span>
+        </div>
         <div id="content" style="display: none;">
             <iframe id="subpage" width="100%" style="height: 80vh;"></iframe>
     
@@ -196,6 +226,9 @@
                 <button class="previous" onclick="previous()">←</button>
                 <button id="like" class="like" onclick="dislike()">Dislike👎</button>
                 <button id="dislike" class="dislike" onclick="like()">Like👍</button>
+                <button class="nextPage" onclick="goToNextSeen()">→</button>
+                <button class="lastSeen" onclick="goToLastSeen()">>></button>
+
             </div>
         </div>
 </body>
