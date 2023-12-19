@@ -102,17 +102,29 @@
             }, false);
 
             function showPage() {
+                document.getElementById('currentPageNumber').innerHTML = (actual+1) + "/" + (last_seen+1);
                 if(pages.length<=actual){
                     document.getElementById("subpage").setAttribute("srcdoc",  '<h1>Waiting for the free server that hosts the API to grace us with his attention...</h1>' );
-                    document.getElementById("like").setAttribute("disabled", true);
-                    document.getElementById("dislike").setAttribute("disabled", true);
-                    document.getElementById('currentPageNumber').innerHTML = (actual+1) + "/" + (last_seen+1);
+                    document.getElementById("like").style.display = "none";
+                    document.getElementById("dislike").style.display = "none";
+                    document.getElementById("next").style.display = "block";
+                    document.getElementById("last").style.display = "block";
                 }else{
                     document.getElementById("subpage").removeAttribute("srcdoc");
                     document.getElementById("subpage").setAttribute("src", pages[actual].url);
-                    document.getElementById("like").removeAttribute("disabled");
-                    document.getElementById("dislike").removeAttribute("disabled");
+                    if(actual == last_seen){
+                        document.getElementById("like").style.display = "block";
+                        document.getElementById("dislike").style.display = "block";
+                        document.getElementById("next").style.display = "none";
+                        document.getElementById("last").style.display = "none";
+                    } else {
+                        document.getElementById("like").style.display = "none";
+                        document.getElementById("dislike").style.display = "none";
+                        document.getElementById("next").style.display = "block";
+                        document.getElementById("last").style.display = "block";
+                    }
                 }
+                
             }
 
             function like() {
@@ -195,12 +207,11 @@
             }
 
             function previous() {
-                actual--
-                if (actual < 0) {
-                    actual = pages.length - 1;
+                if (actual != 0) {
+                    actual--;
+                    updatePageNumber();
+                    showPage();
                 }
-                updatePageNumber();
-                showPage();
             }
 
             function goToLastSeen() {
@@ -226,8 +237,8 @@
                 <button class="previous" onclick="previous()">←</button>
                 <button id="like" class="like" onclick="dislike()">Dislike👎</button>
                 <button id="dislike" class="dislike" onclick="like()">Like👍</button>
-                <button class="nextPage" onclick="goToNextSeen()">→</button>
-                <button class="lastSeen" onclick="goToLastSeen()">>></button>
+                <button id="next" class="nextPage" onclick="goToNextSeen()">→</button>
+                <button id="last" class="lastSeen" onclick="goToLastSeen()">>></button>
 
             </div>
         </div>
