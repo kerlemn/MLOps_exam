@@ -7,7 +7,7 @@ import helper
 #####################
 """
 if __name__ == '__main__':
-    user = "Stefano"
+    user = "provabella"
 
     # train(user)
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     ### Test for the predict and the score of a suggested page ###
     ##############################################################
     """
-    # suggested_pages = get_page(user=user, n=5, best=True)
+    # suggested_pages = get_page(user=user, n=20, best=True)
     # for suggested in suggested_pages:
     #     print(suggested["url"])
     #     score = input("Rate the page (0: dislike, 1: like): ")
@@ -102,17 +102,19 @@ if __name__ == '__main__':
 
 
     X, y = helper.get_training_data(user)
-    
+
     LR = LogisticRegression(max_iter=3000)
     LR_accuracy_mean = np.mean(cross_val_score(LR, X, y, cv=10))
     LR_f1_scores     = np.mean(cross_val_score(LR, X, y,
                                cv=10,
                                scoring=make_scorer(f1_score, average='weighted')))
-    DT = DecisionTreeClassifier(max_depth=5)
+    DT = DecisionTreeClassifier(max_depth=2)
     DT_accuracy_mean = np.mean(cross_val_score(DT, X, y, cv=10))
     DT_f1_scores     = np.mean(cross_val_score(DT, X, y,
                                cv=10,
                                scoring=make_scorer(f1_score, average='weighted')))
+    
+    DT = DT.fit(X, y)
     
     print(f"LR Accuracy: {LR_accuracy_mean}")
     print(f"LR F1 score: {LR_f1_scores}")
