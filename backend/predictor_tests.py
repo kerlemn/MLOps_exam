@@ -7,9 +7,9 @@ import helper
 #####################
 """
 if __name__ == '__main__':
-    user = "10"
+    user = "Stefano"
 
-    train(user)
+    # train(user)
 
     """
     ##########################################
@@ -86,3 +86,36 @@ if __name__ == '__main__':
     #                    .data
 
     # print(response) 
+
+    """
+    #########################
+    ### Obtain accuracies ###
+    #########################
+    """
+
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.tree         import DecisionTreeClassifier
+    from sklearn.model_selection import cross_val_score
+    from sklearn.metrics import f1_score
+    from sklearn.metrics import make_scorer
+    import numpy as np
+
+
+    X, y = helper.get_training_data(user)
+    
+    LR = LogisticRegression(max_iter=3000)
+    LR_accuracy_mean = np.mean(cross_val_score(LR, X, y, cv=10))
+    LR_f1_scores     = np.mean(cross_val_score(LR, X, y,
+                               cv=10,
+                               scoring=make_scorer(f1_score, average='weighted')))
+    DT = DecisionTreeClassifier(max_depth=5)
+    DT_accuracy_mean = np.mean(cross_val_score(DT, X, y, cv=10))
+    DT_f1_scores     = np.mean(cross_val_score(DT, X, y,
+                               cv=10,
+                               scoring=make_scorer(f1_score, average='weighted')))
+    
+    print(f"LR Accuracy: {LR_accuracy_mean}")
+    print(f"LR F1 score: {LR_f1_scores}")
+    print(f"DT Accuracy: {DT_accuracy_mean}")
+    print(f"DT F1 score: {DT_f1_scores}")
+    print(DT.predict_proba(X[:10]))
