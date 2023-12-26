@@ -25,6 +25,7 @@
     
             #buttonsContainer {
                 margin-top: 10px;
+                margin-bottom: 50px;
             }
     
             button {
@@ -82,7 +83,6 @@
     </style>
 </head>
 <body>
-    
     <div id="usernameInput" style="text-align: center;">
         <h1>WikiTok</h1>
         <h2 style="font-size: 20px; font-weight: normal;">Enter your username</h2>
@@ -108,36 +108,26 @@
                 document.getElementById('currentPageNumber').innerHTML = (actual+1) + "/" + (last_seen+1);
                 if(pages.length<=actual){
                     document.getElementById("subpage").setAttribute("srcdoc",  '<h1>Waiting for the free server that hosts the API to grace us with his attention...</h1>' );
-                    document.getElementById("like").style.display = "none";
                     document.getElementById("dislike").style.display = "none";
+                    document.getElementById("like").style.display = "none";
                     document.getElementById("next").style.display = "block";
                     document.getElementById("last").style.display = "block";
                 }else{
                     document.getElementById("subpage").removeAttribute("srcdoc");
                     document.getElementById("subpage").setAttribute("src", pages[actual].url);
                     if(actual == last_seen){
-                        document.getElementById("like").style.display = "block";
                         document.getElementById("dislike").style.display = "block";
+                        document.getElementById("like").style.display = "block";
                         document.getElementById("next").style.display = "none";
                         document.getElementById("last").style.display = "none";
                     } else {
-                        document.getElementById("like").style.display = "none";
                         document.getElementById("dislike").style.display = "none";
+                        document.getElementById("like").style.display = "none";
                         document.getElementById("next").style.display = "block";
                         document.getElementById("last").style.display = "block";
                     }
                 }
                 
-            }
-
-            function like() {
-                savePreference(1);
-                next();
-            }
-
-            function dislike() {
-                savePreference(0);
-                next();
             }
 
             function submitUsername(event) {
@@ -192,40 +182,29 @@
                 .catch(error => {
                     console.error('Error while saving data to the database:', error);
                 });
-            }
-
-            function next() {
+                // next
                 actual++;
                 last_seen++;
                 if(pages.length-actual==4) getMore()
-                updatePageNumber();
                 showPage();
             }
 
             function goToNextSeen() {;
                 if(actual == last_seen) console.error('You have to rate the page before going to the next one!');
                 else if(actual<last_seen) actual++;
-                updatePageNumber();
                 showPage();
             }
 
             function previous() {
                 if (actual != 0) {
                     actual--;
-                    updatePageNumber();
                     showPage();
                 }
             }
 
             function goToLastSeen() {
                 actual = last_seen;
-                updatePageNumber();
                 showPage();
-            }
-
-            function updatePageNumber() {
-                // Aggiorna il numero della pagina corrente nella nota in basso a destra
-                document.getElementById('currentPageNumber').innerHTML = (actual+1) + "/" + (last_seen+1);
             }
 
         </script>
@@ -238,8 +217,8 @@
             <!-- Pulsanti per previous, like e dislike -->
             <div id="buttonsContainer">
                 <button class="previous" onclick="previous()">←</button>
-                <button id="like" class="like" onclick="dislike()">Dislike👎</button>
-                <button id="dislike" class="dislike" onclick="like()">Like👍</button>
+                <button id="dislike" class="dislike" onclick="savePreference(1)">Dislike👎</button>
+                <button id="like" class="like" onclick="savePreference(0)">Like👍</button>
                 <button id="next" class="nextPage" onclick="goToNextSeen()">→</button>
                 <button id="last" class="lastSeen" onclick="goToLastSeen()">>></button>
 
