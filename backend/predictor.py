@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore")
 ####################################
 """
 # Coefficient for number of row in the predict dataset
-__k__               = 10
+__k__               = 100
 # Number of feed for each user to trigger the re-train
 __newfeed__         = 10 
 # # Neptune project name
