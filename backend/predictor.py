@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore")
 ####################################
 """
 # Coefficient for number of row in the predict dataset
-__k__               = 10
+__k__               = 100
 # Number of feed for each user to trigger the re-train
 __newfeed__         = 10 
 # # Neptune project name
@@ -89,7 +89,7 @@ def train(user:str):
     user: str
         User id to determine the preferences to use
     """
-    X, y = helper.get_training_data(user)
+    X, y, columns = helper.get_training_data(user)
 
     # If the user has only one class, don't train the model
     if np.unique(y).shape[0] == 1:
@@ -108,7 +108,7 @@ def train(user:str):
         api_token = __neptune_token__,
     )
 
-    names, coef  = helper.get_best_coefficients(clf.coef_[0])
+    parameters = {name: value for name, value in zip(columns, clf.coef_[0])}
 
     # Weight the feedback by the timestamp
     ordered_feed = get_ordered_feedback(user)
@@ -116,13 +116,14 @@ def train(user:str):
 
     run["user"]         = user
     run["parameters"]   = clf.get_params()
-    run["coefficients"] = names
-    run["coefficients"] = coef
+    run["coefficients"] = clf.coef_[0]
     run["intercept"]    = clf.intercept_
     run["rows"]         = len(y)
     run["likes"]        = np.mean(weighted_feed)
 
     run.stop()
+
+    return parameters
 
 def get_page(user:str, n=1, best=True) -> list:
     """
@@ -170,11 +171,14 @@ def add_feedback(user:str, title_page: str, score: int):
     # Add the feedback to the user's feedback .csv file
     # And obtain the number of feedbacks given by the user
     n = helper.add_feedback(user, title_page, score)
+    parameters = None
 
     # Every __newfeed__ feedback re-train the model
     if n % __newfeed__ == 0:
         print(f"{n} feedback: Retrain model for user {user}")
-        train(user)
+        parameters = train(user)
+
+    return parameters
 
 def get_ordered_feedback(user:str) -> np.array:
     """

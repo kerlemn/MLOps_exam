@@ -202,10 +202,12 @@ def get_training_data(user:str):
     pages          = wiki_database.get_training_data(rated_titles)
 
     # Get the training data
-    X = pages.drop("title", axis=1).values
+    pages = pages.drop("title", axis=1)
+    columns = pages.columns.values
+    X = pages.values
     y = feedback_df["SCORE"].values
 
-    return X, y
+    return X, y, columns
 
 
 def get_columns_name():
@@ -228,34 +230,3 @@ def get_columns_name():
     columns = page.columns.values
 
     return columns
-
-def get_best_coefficients(coef:list, n:int=10):
-    """
-    Function to get the best coefficients for the model.
-
-    Parameters
-    ----------
-    coef: list
-        List of the coefficients
-
-    Returns
-    -------
-    best_coefficients: list
-        List of the best coefficients
-    """
-    # Get the index of the best coefficients
-    best_coefficients_idx = np.argsort(np.abs(coef))
-    columns_name          = get_columns_name()
-
-    # Get the best coefficients
-    best_coefficients     = coef[best_coefficients_idx]
-    best_names            = columns_name[best_coefficients_idx]
-
-    # Get the best n coefficients
-    best_coefficients     = best_coefficients[-n:][::-1]
-    best_names            = best_names[-n:][::-1]
-
-    coefficients_names  = {f"best_{i+1}_name": name for i, name in enumerate(best_names)}
-    coefficients_values = {f"best_{i+1}_value": val for i, val in enumerate(best_coefficients)}
-
-    return coefficients_names, coefficients_values
