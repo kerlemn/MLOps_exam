@@ -177,8 +177,14 @@
                 })
                 .then(response => response.json())
                 .then(json => {
-                    if(json.Coef!=null){
-                        console.log(json.Coef)
+                    if(json!=null){
+                        document.getElementById("coef").style.display = "block";
+                        const cc = Object.keys(json.Coef)
+                        str=""
+                        cc.forEach((key,idx)=>{
+                            str+="<tr><td>"+key+"</td><td>"+(Math.round((json.Coef[key] + Number.EPSILON) * 1000) / 1000)+"</td></tr>"
+                        });
+                        document.getElementById("table").innerHTML=str
                     }
                 })
                 .catch(error => {
@@ -213,14 +219,17 @@
         <div id="pageNumberNote" style="position: fixed; bottom: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.5); color: white; padding: 5px 10px; border-radius: 5px;">
             Page: <span id="currentPageNumber">1</span>
         </div>
+        <div id="coef" style="display: none;position: fixed; top: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.5); color: white; padding: 5px 10px; border-radius: 5px;">
+            <table id="table"></table>
+        </div>
         <div id="content" style="display: none;">
             <iframe id="subpage" width="100%" style="height: 80vh;"></iframe>
     
             <!-- Pulsanti per previous, like e dislike -->
             <div id="buttonsContainer">
                 <button class="previous" onclick="previous()">←</button>
-                <button id="dislike" class="dislike" onclick="savePreference(1)">Dislike👎</button>
-                <button id="like" class="like" onclick="savePreference(0)">Like👍</button>
+                <button id="dislike" class="dislike" onclick="savePreference(0)">Dislike👎</button>
+                <button id="like" class="like" onclick="savePreference(1)">Like👍</button>
                 <button id="next" class="nextPage" onclick="goToNextSeen()">→</button>
                 <button id="last" class="lastSeen" onclick="goToLastSeen()">>></button>
 
