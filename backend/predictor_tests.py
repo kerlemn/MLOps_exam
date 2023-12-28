@@ -7,7 +7,7 @@ import helper
 #####################
 """
 if __name__ == '__main__':
-    user = "provabella"
+    user = "asd"
 
     # train(user)
 

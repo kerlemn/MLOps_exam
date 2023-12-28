@@ -116,7 +116,7 @@ def train(user:str):
 
     run["user"]         = user
     run["parameters"]   = clf.get_params()
-    run["coefficients"] = clf.coef_[0]
+    run["coefficients"] = parameters
     run["intercept"]    = clf.intercept_
     run["rows"]         = len(y)
     run["likes"]        = np.mean(weighted_feed)
