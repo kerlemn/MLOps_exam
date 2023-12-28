@@ -175,9 +175,11 @@
                         user: username // Change this field to the current user or user ID
                     })
                 })
-                .then(response => {
-                    console.log('Data saved to the database successfully');
-                    // You can handle further actions here after saving data to the database
+                .then(response => response.json())
+                .then(json => {
+                    if(json.Coef!=null){
+                        console.log(json.Coef)
+                    }
                 })
                 .catch(error => {
                     console.error('Error while saving data to the database:', error);
