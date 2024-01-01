@@ -2,17 +2,21 @@ import pandas as pd
 import numpy as np
 
 from helper import get_training_data, load_user_feedback
+from knn import knn
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree         import DecisionTreeClassifier
 from sklearn.svm          import LinearSVC
 from sklearn.naive_bayes  import GaussianNB
+from sklearn.pipeline     import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 import graphviz
 from graphviz import Source
 from sklearn import tree
 
 from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score
 from scipy.spatial.distance import cosine
 
 from sklearn.model_selection import cross_val_score
@@ -43,7 +47,6 @@ def get_data():
 
 def train_models(to_train, cv, X, y):
     # Split the data in train and test set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     models        = []
     accuracies    = []
@@ -52,30 +55,39 @@ def train_models(to_train, cv, X, y):
     predict_times = []
 
     for model in to_train:
-        # Train the model and keep the times
-        start_train = time()
-        clf = model.fit(X_train, y_train)
-        end_train = time()
+        k_fold_accuracy_mean = []
+        k_fold_f1_scores     = []
+        
+        for _ in range(cv):
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-        # Make the prediction and keep the times
-        start_pred = time()
-        pred = clf.predict(X_test)
-        end_pred = time()
+            # pipe = Pipeline([('scaler', StandardScaler()), ('model', model)])
+            pipe = model
+            # Train the model and keep the times
+            start_train = time()
+            clf = pipe.fit(X_train, y_train)
+            end_train = time()
 
-        # Calculate the mean of the accuracies for the algorithm
-        k_fold_accuracy_mean = np.mean(cross_val_score(clf, X, y, cv=cv))
-        # Calculate the mean of the f1-scores for the algorithm
+            # Make the prediction and keep the times
+            start_pred = time()
+            pred = pipe.predict(X_test)
+            end_pred = time()
 
-        datasets = [train_test_split(X, y, test_size=0.2) for _ in range(cv)]
+            # Calculate the mean of the accuracies for the algorithm
+            k_fold_accuracy_mean.append(accuracy_score(y_test, pred))
+            # Calculate the mean of the f1-scores for the algorithm
+            k_fold_f1_scores    .append(f1_score(y_test, pred))
 
-        k_fold_f1_scores     = np.mean([f1_score(y_test, DecisionTreeClassifier(max_depth=3).fit(X_train, y_train).predict(X_test)) for X_train, X_test, y_train, y_test in datasets])
+            # datasets = [train_test_split(X, y, test_size=0.2) for _ in range(cv)]
 
-        # Append the informations
+            # k_fold_f1_scores     = np.mean([f1_score(y_test, DecisionTreeClassifier(max_depth=3).fit(X_train, y_train).predict(X_test)) for X_train, X_test, y_train, y_test in datasets])
+
+            # Append the informations
         models       .append(clf)
-        accuracies   .append(round( k_fold_accuracy_mean, 3 ))
-        f1_scores    .append(round( k_fold_f1_scores, 3 ))
-        train_times  .append(end_train - start_train)
-        predict_times.append(end_pred - start_pred)
+        accuracies   .append(round( np.mean(k_fold_accuracy_mean), 3 ))
+        f1_scores    .append(round( np.mean(k_fold_f1_scores), 3 ))
+        train_times  .append(round(end_train - start_train, 5))
+        predict_times.append(round(end_pred - start_pred, 5))
 
     return models, accuracies, f1_scores, train_times, predict_times
 
@@ -83,7 +95,7 @@ def decision_tree_changed(X, y, titles):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     # Train the model and keep the times
-    clf = DecisionTreeClassifier(max_depth=5).fit(X_train, y_train)
+    clf = DecisionTreeClassifier().fit(X_train, y_train)
     # Make the prediction and keep the times
     pred = clf.predict(X_test)
     prob = clf.predict_proba(X_test)[:, 1]
@@ -154,22 +166,33 @@ def get_times(model, enlarged_data):
 
     for X_enlarged, y_enlarged in enlarged_data:
         train_times = []
-        for _ in range(10):
-            start_train   = time()
-            clf           = model.fit(X_enlarged, y_enlarged)
-            end_train     = time()
+        if model == "KNN":
+            train_times   += [0]
+        else:
+            for _ in range(10):
+                start_train   = time()
+                clf           = model.fit(X_enlarged, y_enlarged)
+                end_train     = time()
 
-            train_times   += [end_train - start_train]
+                train_times   += [end_train - start_train]
 
         train.append(np.mean(train_times))
 
         pred_times  = []
-        for _ in range(10):
-            start_predict = time()
-            clf.predict(X_enlarged)
-            end_predict   = time()
+        if model == "KNN":
+            for _ in range(10):
+                start_predict = time()
+                knn(X_enlarged, y_enlarged, X_enlarged)
+                end_predict   = time()
 
-            pred_times    += [end_predict - start_predict]
+                pred_times    += [end_predict - start_predict]
+        else:
+            for _ in range(10):
+                start_predict = time()
+                clf.predict(X_enlarged)
+                end_predict   = time()
+
+                pred_times    += [end_predict - start_predict]
         
         pred.append(np.mean(pred_times))
 
@@ -179,7 +202,7 @@ def get_times(model, enlarged_data):
 ### Load data ###
 #################
 user = "Testserio"
-X, y = get_training_data(user)
+X, y, columns = get_training_data(user)
 y = y == "True"
 titles, _, _ = get_data()
 
@@ -188,13 +211,28 @@ decision_tree_changed(X, y, titles)
 #######################
 ### Train the model ###
 #######################
-to_train = [LogisticRegression(), DecisionTreeClassifier(max_depth=5), LinearSVC(), GaussianNB()]
+to_train = [LogisticRegression(), DecisionTreeClassifier(), LinearSVC(), GaussianNB()]
 models, accuracies, f1_scores, train_times, predict_times = train_models(to_train, 10, X, y)
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+time1 = time()
+results = knn(X_train, y_train, X_test)
+time2 = time()
+
+y_hat = np.zeros(len(y_test))
+y_hat[[results]] = 1
+
+train_times  .append(0)
+predict_times.append(round(time2 - time1, 3))
+accuracies   .append(round(accuracy_score(y_test, y_hat), 5))
+f1_scores    .append(round(f1_score(y_test, y_hat), 5))
 
 #########################
 ### Print the results ###
 #########################
-algorithm_names=["Logistic Regression", "Decision Tree", "Support Vector Classifier", "Gaussian Naive Bayes"]
+algorithm_names=["Logistic Regression", "Decision Tree", "Support Vector Classifier", "Gaussian Naive Bayes", "KNN"]
 data = np.array([accuracies, f1_scores, train_times, predict_times]).T
 
 results_df = pd.DataFrame(data,
@@ -215,11 +253,13 @@ plt.savefig('barplot.png',format='png',bbox_inches = "tight")
 #########################
 ### Check scalability ###
 #########################
+algorithm_names=["Logistic Regression", "Decision Tree", "Support Vector Classifier", "Gaussian Naive Bayes"]
 enlarged_data = enlarge_dataset(X, y)
 LR_times, LR_pred_times     = get_times(LogisticRegression(), enlarged_data)
 DT_times, DT_pred_times     = get_times(DecisionTreeClassifier(max_depth=3), enlarged_data)
 SVC_times, SVC_pred_times   = get_times(LinearSVC(), enlarged_data)
 GNB_times, GNB_pred_times   = get_times(GaussianNB(), enlarged_data)
+# KNN_times, KNN_pred_times   = get_times("KNN", enlarged_data)
 
 train_data = np.array([LR_times, DT_times, SVC_times, GNB_times]).T
 pred_data  = np.array([LR_pred_times, DT_pred_times, SVC_pred_times, GNB_pred_times]).T

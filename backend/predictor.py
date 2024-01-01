@@ -12,6 +12,8 @@ import helper
 import warnings
 warnings.filterwarnings("ignore")
 
+from time import time
+
 """
 ####################################
 ### Global variables declaration ###
@@ -31,6 +33,90 @@ __neptune_token__   = os.getenv('NEPTUNE_API_TOKEN').replace("\r", "")
 ### Functions declaration ###
 #############################
 """
+def predict_no_model(n:int, best:bool):
+    """
+    Select the best pages based on the average score of the users.
+
+    Parameters
+    ----------
+    n: int
+        Number of pages to return
+    best: bool
+        Boolean to select if return the most suggested page or just one of the several suggested pages with respect to their scores
+    
+    Returns
+    -------
+    selected: np.array
+        Array of the selected page's titles
+    """
+    # Obtain the average score of the users for each page
+    df, grouped = helper.get_all_pages()
+
+    if best:
+        # Select the best pages
+        selected = grouped.sort_values(by="Score", ascending=False).index.values[:n]
+    else:
+        # Select the pages with respect to the average score
+        grouped  = grouped[grouped["Score"] > 0]
+
+        # If there are pages with a score > 0
+        if grouped.shape[0] > 0:
+            # Calculate the probability for each element to be chosen
+            proba    = grouped["Score"].values
+            proba    = proba / sum(proba) 
+
+            # Select the pages with respect to the probabilities
+            titles   = grouped.index.values
+            selected = np.random.choice(titles, n, p=proba)
+        else:
+            # If there are no pages with a score > 0, select randomly
+            titles   = df["Title"].values
+            selected = np.random.choice(df, n)
+
+    return selected
+
+def predict_model(model, n:int, best:bool):
+    """
+    Select the best pages based on the model trained on the user's preferences.
+
+    Parameters
+    ----------
+    model: sklearn.linear_model.LogisticRegression
+        Model trained on the user's preferences
+    n: int
+        Number of pages to return
+    best: bool
+        Boolean to select if return the most suggested page or just one of the several suggested pages with respect to their scores
+    
+    Returns
+    -------
+    reccomended_page: np.array
+        Array of the selected page's titles
+    """
+    n_row = __k__ * n
+
+    # Load the dataset
+    pages = helper.get_random_pages(n_row)
+    X     = pages.drop("title", axis=1).values
+
+    probabilities = model.predict_proba(X)[:, 1]
+
+    if best:
+        # Get the index of the most suggested page
+        reccomended_idx           = np.argsort(probabilities)[-n:]
+    else:
+        # Calculate the probability for each element to be chosen
+        sum_selected              = np.sum(probabilities)
+        reccomended_probabilities = probabilities/sum_selected
+
+        # Select an element with respect to the probabilities
+        reccomended_idx           = np.random.choice(range(n_row), n, p=reccomended_probabilities, replace=False)
+    
+    # Get the original index of the page
+    reccomended_page = pages.values[reccomended_idx, 0]
+
+    return reccomended_page
+
 def predict(user:str, n:int, best=True) -> np.array:
     """
     Function to predict the possible pages that the user specified could like based on its preferences (given from the model trained on its preferences).
@@ -49,36 +135,20 @@ def predict(user:str, n:int, best=True) -> np.array:
     reccomended_page: np.array
         The reccomended pages based on the preferences of the user.
     """
-    n_row = __k__ * n
-
-    # Load the dataset
-    pages = helper.get_random_pages(n_row)
-    X     = pages.drop("title", axis=1).values
+    
 
     # Load the model
     model = helper.load_model(user)
+
     if model is not None:
         # Predict the probabilities
-        probabilities = model.predict_proba(X)[:, 1]
-
-        if best:
-            # Get the index of the most suggested page
-            reccomended_idx           = np.argsort(probabilities)[-n:]
-        else:
-            # Calculate the probability for each element to be chosen
-            sum_selected              = np.sum(probabilities)
-            reccomended_probabilities = probabilities/sum_selected
-
-            # Select an element with respect to the probabilities
-            reccomended_idx           = np.random.choice(range(n_row), n, p=reccomended_probabilities, replace=False)
+        reccomended = predict_model(model, n, best)
     else:
-        # If the model is not trained yet, return a random page
-        reccomended_idx = np.random.randint(0, n_row, n)
+        # If the model is not trained yet return the best rated
+        reccomended = predict_no_model(n, best)
 
-    # Get the original index of the page
-    reccomended_page = pages.values[reccomended_idx]
 
-    return reccomended_page
+    return reccomended
 
 def train(user:str):
     """
@@ -143,10 +213,9 @@ def get_page(user:str, n=1, best=True) -> list:
     """
 
     # Get the prediction for the user specified
-    pages_info = predict(user=user, n=n, best=best)
+    pages      = predict(user=user, n=n, best=best)
 
     # Get the URL of the pages
-    pages      = pages_info[:, 0]
     urls       = [url.replace(' ', '_') for url in pages]
 
     # Create the list of the suggested pages conform to the frontend

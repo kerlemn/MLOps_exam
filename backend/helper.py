@@ -17,6 +17,8 @@ __key__: str = os.environ.get("SUPABASE_KEY").replace("\r", "")
 __supabase__: Client = create_client(__url__, __key__)
 
 
+from time import time
+
 def load_user_feedback(user:str) -> pd.DataFrame:
     """
     Function to load the "userX_feedback.csv" data.
@@ -187,6 +189,7 @@ def get_training_data(user:str):
         Array of the scores of the pages
     """
     # Load the data
+
     wiki_database  = WikiDatabase(f'{__path__}/data_engineering/data/wiki_database')
     feedback_df    = load_user_feedback(user)
 
@@ -196,6 +199,7 @@ def get_training_data(user:str):
         titles = feedback_title[feedback_title.duplicated()]
         idxs   = [feedback_title[feedback_title == title].index[0] for title in titles]
         feedback_df = feedback_df.drop(idxs)
+
 
     # Get the pages information
     rated_titles   = feedback_df["title"].values
@@ -230,3 +234,32 @@ def get_columns_name():
     columns = page.columns.values
 
     return columns
+
+def get_all_pages():
+    """
+    Function to get all the pages rated by the users.
+
+    Returns
+    -------
+    df: pd.DataFrame
+        Dataframe of the pages rated by the users
+    grouped: pd.DataFrame
+        Dataframe of the mean of the ratings grouped by the title
+    """
+    # Obtain the titles and the scores of the pages
+    response = __supabase__.table('Preferences') \
+                           .select('*') \
+                           .execute() \
+                           .data
+    
+    # Decompose the response
+    titles = [row["Title"]     for row in response]
+    scores = [int(row["Like"]) for row in response]
+
+    # Create the dataframe of the feedbacks
+    df = pd.DataFrame(np.array([titles, scores]).T, columns=["Title", "Score"])
+
+    # Group the dataframe by the title and calculate the mean of the scores
+    grouped  = df.groupby("Title").mean()
+
+    return df, grouped
