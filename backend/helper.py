@@ -253,13 +253,15 @@ def get_all_pages():
                            .data
     
     # Decompose the response
-    titles = [row["Title"]     for row in response]
-    scores = [int(row["Like"]) for row in response]
+    titles = [row["Title"]             for row in response]
+    scores = [1 if row["Like"] else -1 for row in response]
 
     # Create the dataframe of the feedbacks
     df = pd.DataFrame(np.array([titles, scores]).T, columns=["Title", "Score"])
+    df["Score"] = df["Score"].astype(int)
 
     # Group the dataframe by the title and calculate the mean of the scores
-    grouped  = df.groupby("Title").mean()
+    grouped  = df.groupby("Title")
+    grouped  = (grouped.sum() + 1) / (grouped.count() + 2)
 
     return df, grouped

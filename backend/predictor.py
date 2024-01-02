@@ -73,6 +73,8 @@ def predict_no_model(n:int, best:bool):
             titles   = df["Title"].values
             selected = np.random.choice(df, n)
 
+    
+
     return selected
 
 def predict_model(model, n:int, best:bool):
