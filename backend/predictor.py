@@ -33,7 +33,7 @@ __neptune_token__   = os.getenv('NEPTUNE_API_TOKEN').replace("\r", "")
 ### Functions declaration ###
 #############################
 """
-def predict_no_model(n:int, best:bool):
+def predict_no_model(n:int):
     """
     Select the best pages based on the average score of the users.
 
@@ -52,26 +52,22 @@ def predict_no_model(n:int, best:bool):
     # Obtain the average score of the users for each page
     df, grouped = helper.get_all_pages()
 
-    if best:
-        # Select the best pages
-        selected = grouped.sort_values(by="Score", ascending=False).index.values[:n]
+    # Select the pages with respect to the average score
+    grouped  = grouped[grouped["Score"] > 0]
+
+    # If there are pages with a score > 0
+    if grouped.shape[0] > 0:
+        # Calculate the probability for each element to be chosen
+        proba    = grouped["Score"].values
+        proba    = proba / sum(proba) 
+
+        # Select the pages with respect to the probabilities
+        titles   = grouped.index.values
+        selected = np.random.choice(titles, n, p=proba)
     else:
-        # Select the pages with respect to the average score
-        grouped  = grouped[grouped["Score"] > 0]
-
-        # If there are pages with a score > 0
-        if grouped.shape[0] > 0:
-            # Calculate the probability for each element to be chosen
-            proba    = grouped["Score"].values
-            proba    = proba / sum(proba) 
-
-            # Select the pages with respect to the probabilities
-            titles   = grouped.index.values
-            selected = np.random.choice(titles, n, p=proba)
-        else:
-            # If there are no pages with a score > 0, select randomly
-            titles   = df["Title"].values
-            selected = np.random.choice(df, n)
+        # If there are no pages with a score > 0, select randomly
+        titles   = df["Title"].values
+        selected = np.random.choice(df, n)
 
     return selected
 
@@ -145,7 +141,7 @@ def predict(user:str, n:int, best=True) -> np.array:
         reccomended = predict_model(model, n, best)
     else:
         # If the model is not trained yet return the best rated
-        reccomended = predict_no_model(n, best)
+        reccomended = predict_no_model(n)
 
 
     return reccomended
