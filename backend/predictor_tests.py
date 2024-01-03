@@ -7,9 +7,7 @@ import helper
 #####################
 """
 if __name__ == '__main__':
-    user = "asd"
-
-    # train(user)
+    user = "omarfait97"
 
     """
     ##########################################
@@ -36,7 +34,7 @@ if __name__ == '__main__':
     ### Test for the predict and the score of a suggested page ###
     ##############################################################
     """
-    suggested_pages = get_page(user=user, n=20, best=True)
+    # suggested_pages = get_page(user=user, n=20, best=True)
     # for suggested in suggested_pages:
     #     print(suggested["url"])
     #     score = input("Rate the page (0: dislike, 1: like): ")
@@ -121,3 +119,16 @@ if __name__ == '__main__':
     # print(f"DT Accuracy: {DT_accuracy_mean}")
     # print(f"DT F1 score: {DT_f1_scores}")
     # print(DT.predict_proba(X[:10]))
+
+    """
+    ###########################################
+    ### Save all the user pages information ###
+    ###########################################
+    """
+
+    # df = helper.load_user_feedback(user)[["title", "SCORE"]]
+    # X, y, columns = helper.get_training_data(user)
+
+    # for name, column in zip(columns, X.T):
+    #     df[name] = column
+    # df.to_csv(f"omar.csv", index=False)
