@@ -53,7 +53,7 @@ def predict_no_model(n:int):
     df, grouped = helper.get_all_pages()
 
     # Select the pages with respect to the average score
-    grouped  = grouped[grouped["Score"] > 0]
+    grouped     = grouped[grouped["Score"] > 0]
 
     # If there are pages with a score > 0
     if grouped.shape[0] > 0:
@@ -64,10 +64,15 @@ def predict_no_model(n:int):
         # Select the pages with respect to the probabilities
         titles   = grouped.index.values
         selected = np.random.choice(titles, n, p=proba)
-    else:
+    elif df.shape[0] > 0:
         # If there are no pages with a score > 0, select randomly
         titles   = df["Title"].values
-        selected = np.random.choice(df, n)
+        selected = np.random.choice(titles, n)
+    else:
+        # If there are no pages in the dataset, select randomly
+        n_row    = __k__ * n
+        titles   = helper.get_random_pages(n_row)["title"].values
+        selected = np.random.choice(titles, n)
 
     return selected
 
@@ -142,7 +147,6 @@ def predict(user:str, n:int, best=True) -> np.array:
     else:
         # If the model is not trained yet return the best rated
         reccomended = predict_no_model(n)
-
 
     return reccomended
 
