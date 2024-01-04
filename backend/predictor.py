@@ -172,7 +172,7 @@ def train(user:str):
 
     if old_coef is not None:
         # Update the coefficient with the new one
-        prev_importance = 0.85
+        prev_importance = 0.5
         clf.coef_[0]    = prev_importance * np.array(clf.coef_[0]) + (1 - prev_importance) * np.array(old_coef)
         clf.coef_[0]    = clf.coef_[0].tolist()
 
