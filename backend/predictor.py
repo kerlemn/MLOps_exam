@@ -189,7 +189,7 @@ def train(user:str):
 
     # Weight the feedback by the timestamp
     ordered_feed = get_ordered_feedback(user)
-    weighted_feed = [score * np.exp(-i/10) for i, score in enumerate(ordered_feed)]
+    weighted_feed = [score * np.exp(-i/50) for i, score in enumerate(ordered_feed)]
 
     run["user"]         = user
     run["parameters"]   = clf.get_params()
