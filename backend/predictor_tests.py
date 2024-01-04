@@ -7,7 +7,9 @@ import helper
 #####################
 """
 if __name__ == '__main__':
-    user = "omarfait97adkal"
+    user = "Stefano"
+
+    train(user)
 
     """
     ##########################################
@@ -34,11 +36,11 @@ if __name__ == '__main__':
     ### Test for the predict and the score of a suggested page ###
     ##############################################################
     """
-    suggested_pages = get_page(user=user, n=20, best=False)
-    for suggested in suggested_pages:
-        print(suggested["url"])
-        score = input("Rate the page (0: dislike, 1: like): ")
-        add_feedback(user, suggested["title"], int(score))
+    # suggested_pages = get_page(user=user, n=20, best=False)
+    # for suggested in suggested_pages:
+    #     print(suggested["url"])
+    #     score = input("Rate the page (0: dislike, 1: like): ")
+    #     add_feedback(user, suggested["title"], int(score))
 
     """
     ######################################################

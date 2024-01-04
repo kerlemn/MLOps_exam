@@ -273,11 +273,13 @@ def get_ordered_feedback(user:str) -> np.array:
     """
     # Get the feedback of the user
     feedback_df = helper.load_user_feedback(user)
+    print(feedback_df)
 
     # Get the sorted feedback
     feedback = feedback_df.sort_values(by="TIMES", ascending=False)["SCORE"]
+    feedback = [int(score == "True") for score in feedback]
 
-    return feedback.values.astype(bool)
+    return feedback
 
 def get_URLs(user:str) -> np.array:
     """
