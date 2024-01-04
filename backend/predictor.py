@@ -139,7 +139,7 @@ def predict(user:str, n:int, best=True) -> np.array:
     
 
     # Load the model
-    model = helper.load_model(user)
+    model, _ = helper.load_model(user)
 
     if model is not None:
         # Predict the probabilities
@@ -159,6 +159,7 @@ def train(user:str):
     user: str
         User id to determine the preferences to use
     """
+    _, old_coef = helper.load_model(user)
     X, y, columns = helper.get_training_data(user)
 
     # If the user has only one class, don't train the model
@@ -168,6 +169,12 @@ def train(user:str):
 
     # Fit the model
     clf = LogisticRegression(max_iter=3000).fit(X, y)
+
+    if old_coef is not None:
+        # Update the coefficient with the new one
+        prev_importance = 0.85
+        clf.coef_[0]    = prev_importance * np.array(clf.coef_[0]) + (1 - prev_importance) * np.array(old_coef)
+        clf.coef_[0]    = clf.coef_[0].tolist()
 
     # Save the model
     helper.save_model(user, clf)

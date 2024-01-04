@@ -120,13 +120,13 @@ def load_model(user:str):
 
     # If the user has no model, return None
     if len(response) == 0:
-        return None
+        return None, None
     
     # Load the model converting from hex to bytes
     string = bytes.fromhex(response[0]["hex"])
     model = pkl.loads(string)
     
-    return model
+    return model, model.coef_[0]
     
 def save_model(user:str, model):
     """

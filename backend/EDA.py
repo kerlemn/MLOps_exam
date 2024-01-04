@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from helper import get_training_data, load_user_feedback
-from knn import knn
+# from knn import knn
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree         import DecisionTreeClassifier
@@ -201,10 +201,17 @@ def get_times(model, enlarged_data):
 #################
 ### Load data ###
 #################
-user = "Testserio"
+user = "Stefano"
 X, y, columns = get_training_data(user)
 y = y == "True"
 titles, _, _ = get_data()
+
+
+clf = LogisticRegression(max_iter=3000).fit(X, y)
+print(clf.coef_[0])
+clf.coef_[0] = 0.9 * np.array(clf.coef_[0]) + np.array([0.5] * len(clf.coef_[0])) * 0.1
+clf.coef_[0] = clf.coef_[0].tolist()
+print(clf.coef_[0])
 
 decision_tree_changed(X, y, titles)
 
@@ -217,17 +224,17 @@ models, accuracies, f1_scores, train_times, predict_times = train_models(to_trai
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-time1 = time()
-results = knn(X_train, y_train, X_test)
-time2 = time()
+# time1 = time()
+# results = knn(X_train, y_train, X_test)
+# time2 = time()
 
-y_hat = np.zeros(len(y_test))
-y_hat[[results]] = 1
+# y_hat = np.zeros(len(y_test))
+# y_hat[[results]] = 1
 
-train_times  .append(0)
-predict_times.append(round(time2 - time1, 3))
-accuracies   .append(round(accuracy_score(y_test, y_hat), 5))
-f1_scores    .append(round(f1_score(y_test, y_hat), 5))
+# train_times  .append(0)
+# predict_times.append(round(time2 - time1, 3))
+# accuracies   .append(round(accuracy_score(y_test, y_hat), 5))
+# f1_scores    .append(round(f1_score(y_test, y_hat), 5))
 
 #########################
 ### Print the results ###
