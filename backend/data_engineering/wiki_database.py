@@ -22,7 +22,7 @@ class WikiDatabase:
         """select a random file of the database, then get a list of random titles from that file"""
         file_name = self.file_names[np.random.randint(self.n_files)]
         df = pd.read_parquet(os.path.join(self.dir_path, file_name))
-        return df.sample(n_pages).title.values.tolist()
+        return df.sample(n_pages).TITLE.values.tolist()
 
     def get_training_data(self, titles):
         """given a list of titles, get a dataframe with the corresponding binary arrays"""
