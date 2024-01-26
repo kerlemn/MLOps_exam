@@ -194,7 +194,7 @@ def get_training_data(user:str):
     feedback_df    = load_user_feedback(user)
 
     # Remove the duplicated titles from the feedback dataframe but removing the oldest ones
-    feedback_title = feedback_df["title"]
+    feedback_title = feedback_df["TITLE"]
     if feedback_title.duplicated().any():
         titles = feedback_title[feedback_title.duplicated()]
         idxs   = [feedback_title[feedback_title == title].index[0] for title in titles]
@@ -202,11 +202,11 @@ def get_training_data(user:str):
 
 
     # Get the pages information
-    rated_titles   = feedback_df["title"].values
+    rated_titles   = feedback_df["TITLE"].values
     pages          = wiki_database.get_training_data(rated_titles)
 
     # Get the training data
-    pages = pages.drop("title", axis=1)
+    pages = pages.drop("TITLE", axis=1)
     columns = pages.columns.values
     X = pages.values
     y = feedback_df["SCORE"].values
@@ -230,7 +230,7 @@ def get_columns_name():
     page = wiki_database.get_training_data(tmp)
 
     # Get the columns names
-    page.drop("title", axis=1, inplace=True)
+    page.drop("TITLE", axis=1, inplace=True)
     columns = page.columns.values
 
     return columns
