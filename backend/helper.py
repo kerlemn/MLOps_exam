@@ -46,7 +46,7 @@ def load_user_feedback(user:str) -> pd.DataFrame:
     times  = [row["TimeStamp"] for row in response]
 
     # Create the dataframe of the feedbacks
-    user_database = pd.DataFrame(np.array([titles, scores, times]).T, columns=["title", "SCORE", "TIMES"])
+    user_database = pd.DataFrame(np.array([titles, scores, times]).T, columns=["TITLE", "SCORE", "TIMES"])
 
     return user_database
 
