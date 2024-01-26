@@ -30,7 +30,7 @@ class WikiDatabase:
         data = data.reset_index(drop=True)
         for file_name in self.file_names:
             df = pd.read_parquet(os.path.join(self.dir_path, file_name))
-            df = df[df.title.isin(titles)]
+            df = df[df.Title.isin(titles)]
             df = df.reset_index(drop=True)
             data = pd.concat([data, df])
         return data
