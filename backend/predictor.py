@@ -170,6 +170,8 @@ def train(user:str, feedbacks:bool = False):
         return
 
     # Fit the model
+    print(X)
+    print(y)
     clf = LogisticRegression(max_iter=3000).fit(X, y)
 
     if old_coef is not None and feedbacks:
