@@ -98,7 +98,7 @@ def predict_model(model, n:int, best:bool):
 
     # Load the dataset
     pages = helper.get_random_pages(n_row)
-    X     = pages.drop("TITLE", axis=1).values
+    X     = pages.drop("title", axis=1).values
 
     probabilities = model.predict_proba(X)[:, 1]
 
@@ -301,7 +301,7 @@ def get_URLs(user:str) -> np.array:
     pages_df = helper.load_user_feedback(user)
 
     # Get the titles of the pages
-    titles   = pages_df["TITLE"].values
+    titles   = pages_df["title"].values
 
     # Get the URL of the pages
     pages    = [{ "url": f"https://en.wikipedia.org/wiki/{title}", "title": title } for title in titles]
@@ -325,7 +325,7 @@ def get_URLs_liked(user:str) -> np.array:
     pages_df = helper.load_user_feedback(user)
     
     # Get the titles of the pages liked by the user
-    titles   = pages_df["TITLE"][pages_df["SCORE"] == "True"].values
+    titles   = pages_df["title"][pages_df["SCORE"] == "True"].values
 
     # Get the URL of the pages
     pages    = [{ "url": f"https://en.wikipedia.org/wiki/{title}", "title": title } for title in titles]
