@@ -150,7 +150,7 @@ def predict(user:str, n:int, best=True) -> np.array:
 
     return reccomended
 
-def train(user:str, feedbacks:bool = False):
+def train(user:str):
     """
     Function to train a new model for the given user id based on its preferences and save it in a pickle file.
 
@@ -158,8 +158,6 @@ def train(user:str, feedbacks:bool = False):
     ----------
     user: str
         User id to determine the preferences to use
-    feedbacks: bool
-        Boolean to understand why the retraain was done
     """
     _, old_coef = helper.load_model(user)
     X, y, columns = helper.get_training_data(user)
@@ -172,7 +170,7 @@ def train(user:str, feedbacks:bool = False):
     # Fit the model
     clf = LogisticRegression(max_iter=3000).fit(X, y)
 
-    if old_coef is not None and feedbacks:
+    if old_coef is not None:
         # Update the coefficient with the new one
         prev_importance = 0.5
         clf.coef_[0]    = prev_importance * np.array(clf.coef_[0]) + (1 - prev_importance) * np.array(old_coef)
@@ -255,7 +253,7 @@ def add_feedback(user:str, title_page: str, score: int):
     # Every __newfeed__ feedback re-train the model
     if n % __newfeed__ == 0:
         print(f"{n} feedback: Retrain model for user {user}")
-        parameters = train(user, True)
+        parameters = train(user)
 
     return parameters
 
